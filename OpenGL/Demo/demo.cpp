@@ -43,8 +43,8 @@ typedef struct {
 glutWindow win;
 int winId;
 
-void display();
 void init();
+void display();
 void keyboard(unsigned char key, int mousePositionX, int mousePositionY);
 void special(int key, int mousePositionX, int mousePositionY);
 void mouse(int button, int state, int mousePositionX, int mousePositionY);
@@ -53,6 +53,7 @@ void reshape(int width, int height);
 void menu(int id);
 void drawLine(int x1, int y1, int x2, int y2);
 void drawDot(int x, int y);
+void drawSomething();
 
 int main(int argc, char* argv[]) {
     // Set window values
@@ -60,8 +61,6 @@ int main(int argc, char* argv[]) {
     win.positionY = 0;
     win.width = 500;
     win.height = 500;
-    win.mouseState = GLUT_UP;
-    win.mouseState = GLUT_LEFT_BUTTON;
     win.title = "Computer Graphics";
     win.fieldOfViewAngle = 45.0f;
     win.zNear = 1.0f;
@@ -74,19 +73,7 @@ int main(int argc, char* argv[]) {
     glutInitWindowSize(win.width, win.height);
     glutInitWindowPosition(win.positionX, win.positionY);
     winId = glutCreateWindow(win.title);
-    // int w = glutGetWindow();
-    // glutCreateSubWindow(w, 0, 0, 250, 250);
-    init();
 
-    menuId = glutCreateMenu(menu);
-    glutAddMenuEntry("Full Screen", 1);
-    glutAddMenuEntry("Exit Full Screen", 2);
-    glutAddMenuEntry("Clear Screen", 3);
-    glutAddMenuEntry("Exit", 4);
-    glutAttachMenu(GLUT_RIGHT_BUTTON);
-
-   // Register callback function for display event
-    glutDisplayFunc(display);
     // Register Idle Function
     // glutIdleFunc(display);
     // Register Keyboard Handler
@@ -98,6 +85,20 @@ int main(int argc, char* argv[]) {
     // glutPassiveMotionFunc();
     glutReshapeFunc(reshape);
     // Enter the event loop
+    menuId = glutCreateMenu(menu);
+    glutAddMenuEntry("Full Screen", 1);
+    glutAddMenuEntry("Exit Full Screen", 2);
+    glutAddMenuEntry("Draw Something", 3);
+    glutAddMenuEntry("Clear Screen", 4);
+    glutAddMenuEntry("Exit", 5);
+    glutAttachMenu(GLUT_RIGHT_BUTTON);
+
+    // int w = glutGetWindow();
+    // glutCreateSubWindow(w, 0, 0, 250, 250);
+    init();
+
+   // Register callback function for display event
+    glutDisplayFunc(display);
     glutMainLoop();
     return 0;
 }
@@ -126,7 +127,13 @@ void init() {
     // Specify implementation-specific hints
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     // Specify clear values for the color buffers
-    glClearColor(.3, .3, .3, 1.0);
+    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+    glColor4f(0.3f, 0.3f, 0.3f, 1.0f);
+}
+
+void display() {
+    // glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 }
 
 void keyboard(unsigned char key, int mousePositionX, int mousePositionY) {
@@ -188,29 +195,42 @@ void reshape(int width, int height) {
     else
         gluOrtho2D(-(GLfloat) win.width / win.height,  (GLfloat) win.width / win.height, -1.0, 1.0);
     glMatrixMode(GL_MODELVIEW);
+    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 }
 
 void menu(int id) {
-    if (id == 1) {
-        glutFullScreen();
+    switch (id) {
+        case 1:
+            glutFullScreen();
+            break;
+        case 2:
+            glutPositionWindow(win.positionX, win.positionY);
+            glutReshapeWindow(win.width, win.height);
+            break;
+        case 3:
+            drawSomething();
+            break;
+        case 4:
+            glLoadIdentity();
+            glViewport(win.positionX, win.positionY, win.width, win.height);
+            if (win.width <= win.height)
+                gluOrtho2D(-1.0, 1.0, -(GLfloat) win.height / win.width, (GLfloat) win.height / win.width);
+            else
+                gluOrtho2D(-(GLfloat) win.width / win.height, (GLfloat) win.width / win.height, -1.0, 1.0);
+            glClear(GL_COLOR_BUFFER_BIT);
+            glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+            // glPushMatrix();
+            // glTranslatef(0.0f, 0.0f, -2.0f);
+            glFlush();
+            break;
+        case 5:
+            glutDestroyWindow(winId);
+            exit(0);
+            break;
+        default:
+            break;
     }
-    else if (id == 2) {
-        glutPositionWindow(win.positionX, win.positionY);
-        glutReshapeWindow(win.width, win.height);
-    }
-    else if (id == 3) {
-        glClear(GL_COLOR_BUFFER_BIT);
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glLoadIdentity();
-        glPushMatrix();
-        glTranslatef(0.0f, 0.0f, -2.0f);
-        glFlush();
-    }
-    else if (id == 4) {
-        glutDestroyWindow(winId);
-        exit(0);
-    }
-    glutPostRedisplay();
+    // glutPostRedisplay();
 }
 
 void drawLine(int x1, int y1, int x2, int y2) {
@@ -230,9 +250,9 @@ void drawDot(int x, int y) {
     glFlush();
 }
 
-void display() {
+void drawSomething() {
     // Clear Screen
-    glClear(GL_COLOR_BUFFER_BIT);
+    // glClear(GL_COLOR_BUFFER_BIT);
     // glLoadIdentity();
     // glTranslatef(0.0f, 0.0f, -2.0f);
 
