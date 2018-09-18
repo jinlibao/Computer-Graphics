@@ -8,6 +8,7 @@
 
 // C++ Libraries
 #include <iostream>
+#include <cmath>
 // OpenGL Libraries
 #ifdef __APPLE__
 #include <GL/glut.h>
@@ -19,8 +20,6 @@
 #include <GL/glu.h>
 #include <GL/gl.h>
 #endif
-
-#include <cmath>
 
 using namespace std;
 
@@ -76,7 +75,6 @@ void mouseFunc(int button, int state, int x, int y);
 void motionFunc(int x, int y);
 void reshapeFunc(int width, int height);
 void displayFunc();
-// void subWindowDisplayFunc();
 void menuFunc(int id);
 void drawMSLogo(double x, double y);
 void drawLine(int x1, int y1, int x2, int y2);
@@ -124,12 +122,6 @@ int main(int argc, char* argv[]) {
 }
 
 void initFunc() {
-    // glShadeModel(GL_SMOOTH);
-    // glClearDepth(1.0f);
-    // glEnable(GL_DEPTH_TEST);
-    // glDepthFunc(GL_LEQUAL);
-    // glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(window.r, window.g, window.b, 1.0f);
     glColor4f(window.r, window.g, window.b, 1.0f);
@@ -172,6 +164,23 @@ void mouseFunc(int button, int state, int x, int y) {
     mouse.y = y;
     mouse.button = button;
     mouse.state = state;
+
+    if (window.drawState) {
+        if (mouse.x >= 10 && mouse.x <= 30) {
+            if (window.height - mouse.y >= 338 && window.height - mouse.y <= 342)
+                glLineWidth(4.0);
+            else if (window.height - mouse.y >= 310 && window.height - mouse.y <= 320)
+                glLineWidth(10.0);
+            else if (window.height - mouse.y >= 270 && window.height - mouse.y <= 290)
+                glLineWidth(20.0);
+            else if (window.height - mouse.y >= 230 && window.height - mouse.y <= 250)
+                glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
+            else if (window.height - mouse.y >= 190 && window.height - mouse.y <= 210)
+                glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
+            else if (window.height - mouse.y >= 150 && window.height - mouse.y <= 170)
+                glColor4f(0.0f, 0.0f, 1.0f, 1.0f);
+        }
+    }
 }
 
 void specialFunc(int key, int x, int y) {
@@ -308,7 +317,7 @@ void drawCircle(double x, double y, double r) {
 void drawToolbar() {
 
     double x, y, r;
-    const int N = 512;
+    const int N = 32;
     double theta = 8 * atan(1) / N;
 
     glBegin(GL_POLYGON);
@@ -319,6 +328,9 @@ void drawToolbar() {
     glVertex2f(toolbar.right - toolbar.edge, toolbar.bottom + toolbar.edge);
     glEnd();
 
+    // brush radius 5px
+    // 10 <= x <= 30
+    // 338 <= y <= 342
     glBegin(GL_POLYGON);
     glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
     x = 20;
@@ -331,6 +343,9 @@ void drawToolbar() {
     }
     glEnd();
 
+    // brush radius 5px
+    // 10 <= x <= 30
+    // 310 <= y <= 320
     glBegin(GL_POLYGON);
     glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
     x = 20;
@@ -343,6 +358,9 @@ void drawToolbar() {
     }
     glEnd();
 
+    // brush radius 10px
+    // 10 <= x <= 30
+    // 270 <= y <= 290
     glBegin(GL_POLYGON);
     glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
     x = 20;
@@ -355,6 +373,9 @@ void drawToolbar() {
     }
     glEnd();
 
+    // red color plate
+    // 10 <= x <= 30
+    // 230 <= y <= 250
     glBegin(GL_POLYGON);
     x = 20;
     y = window.height - 120;
@@ -365,6 +386,9 @@ void drawToolbar() {
     glVertex2f(x + 10, y - 10);
     glEnd();
 
+    // green color plate
+    // 10 <= x <= 30
+    // 190 <= y <= 210
     glBegin(GL_POLYGON);
     x = 20;
     y = window.height - 160;
@@ -375,6 +399,9 @@ void drawToolbar() {
     glVertex2f(x + 10, y - 10);
     glEnd();
 
+    // blue color plate
+    // 10 <= x <= 30
+    // 150 <= y <= 170
     glBegin(GL_POLYGON);
     x = 20;
     y = window.height - 200;
@@ -390,23 +417,23 @@ void drawToolbar() {
 
 void createMenu() {
     glutCreateMenu(menuFunc);
-    glutAddMenuEntry("Full Screen", 1);
-    glutAddMenuEntry("Exit Full Screen", 2);
+    glutAddMenuEntry("Drawing Mode", 6);
+    glutAddMenuEntry("Exit Drawing Mode", 14);
     glutAddMenuEntry("Draw Microsoft Logo", 3);
     glutAddMenuEntry("Draw a circle", 15);
     glutAddMenuEntry("Draw a square", 16);
     glutAddMenuEntry("Draw a triangle", 17);
-    glutAddMenuEntry("Clear Screen", 4);
-    glutAddMenuEntry("Exit", 5);
-    glutAddMenuEntry("Draw", 6);
     glutAddMenuEntry("Erase", 7);
-    glutAddMenuEntry("Brush Size 1px", 8);
-    glutAddMenuEntry("Brush Size 5px", 9);
-    glutAddMenuEntry("Brush Size 10px", 10);
+    glutAddMenuEntry("Brush Size 4px", 8);
+    glutAddMenuEntry("Brush Size 10px", 9);
+    glutAddMenuEntry("Brush Size 20px", 10);
     glutAddMenuEntry("Brush Color Red", 11);
     glutAddMenuEntry("Brush Color Green", 12);
     glutAddMenuEntry("Brush Color Blue", 13);
-    glutAddMenuEntry("Exit Drawing Mode", 14);
+    glutAddMenuEntry("Clear Screen", 4);
+    glutAddMenuEntry("Full Screen", 1);
+    glutAddMenuEntry("Exit Full Screen", 2);
+    glutAddMenuEntry("Exit Painter App", 5);
     glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
@@ -448,7 +475,7 @@ void menuFunc(int id) {
         case 6:
             window.drawState = true;
             glColor3f(1.0f, 0.0f, 0.0f);
-            glLineWidth(1.0);
+            glLineWidth(4.0);
             break;
         case 7:
             window.drawState = true;
@@ -456,13 +483,13 @@ void menuFunc(int id) {
             glLineWidth(20.0);
             break;
         case 8:
-            glLineWidth(1.0);
+            glLineWidth(4.0);
             break;
         case 9:
-            glLineWidth(5.0);
+            glLineWidth(10.0);
             break;
         case 10:
-            glLineWidth(10.0);
+            glLineWidth(20.0);
             break;
         case 11:
             glColor3f(1.0f, 0.0f, 0.0f);
@@ -479,10 +506,10 @@ void menuFunc(int id) {
             glColor3f(0.0f, 0.0f, 1.0f);
             break;
         case 15:
-            drawCircle(mouse.x, window.height - mouse.y, 50);
+            drawCircle(mouse.x, window.height - mouse.y, 25);
             break;
         case 16:
-            drawSquare(mouse.x, window.height - mouse.y, 100);
+            drawSquare(mouse.x, window.height - mouse.y, 50);
             break;
         case 17:
             drawTriangle(mouse.x, window.height - mouse.y, 50);
