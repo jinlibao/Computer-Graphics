@@ -33,12 +33,14 @@ typedef struct {
     int old_height;
     int width;
     int height;
-    float angle;
-    float aspect;
-    float r;
-    float g;
-    float b;
+    double angle;
+    double aspect;
+    double r;
+    double g;
+    double b;
+    double a;
     bool drawState;
+    bool deleteState;
     const char* title;
 } glutWindow;
 
@@ -50,9 +52,11 @@ typedef struct {
 } glutMouse;
 
 typedef struct {
-    float r;
-    float g;
-    float b;
+    double r;
+    double g;
+    double b;
+    double a;
+    double px;
 } glutPen;
 
 typedef struct {
@@ -63,9 +67,18 @@ typedef struct {
     int edge;
 } glutToolbar;
 
+typedef struct {
+    int x1;
+    int y1;
+    int x2;
+    int y2;
+} glutDeleteRect;
+
 glutWindow window;
 glutMouse mouse;
+glutPen pen;
 glutToolbar toolbar;
+glutDeleteRect deleteRect;
 
 void initFunc();
 void createMenu();
@@ -73,6 +86,7 @@ void keyboardFunc(unsigned char key, int x, int y);
 void specialFunc(int key, int x, int y);
 void mouseFunc(int button, int state, int x, int y);
 void motionFunc(int x, int y);
+void passiveMotionFunc(int x, int y);
 void reshapeFunc(int width, int height);
 void displayFunc();
 void menuFunc(int id);
@@ -82,8 +96,11 @@ void drawTriangle(double x1, double y1, double s);
 void drawSquare(double x, double y, double s);
 void drawCircle(double ox, double y, double r);
 void drawToolbar();
+void drawDeleteRect(double x1, double y1, double x2, double y2);
+void drawDeleteRectDotted(double x1, double y1, double x2, double y2);
 
 int main(int argc, char* argv[]) {
+    // initialize the parameters for window
     window.x = 0;
     window.y = 0;
     window.width = 640;
@@ -96,8 +113,18 @@ int main(int argc, char* argv[]) {
     window.r = 0.3f;
     window.g = 0.3f;
     window.b = 0.3f;
+    window.a = 1.0f;
     window.drawState = false;
+    window.deleteState = false;
 
+    // initialize the parameters for pen
+    pen.r = 1.0f;
+    pen.g = 0.0f;
+    pen.b = 0.0f;
+    pen.a = 1.0f;
+    pen.px = 1.0f;
+
+    // initialize the parameters for toolbar
     toolbar.left = 0;
     toolbar.bottom = 0;
     toolbar.right = 40;
@@ -113,6 +140,7 @@ int main(int argc, char* argv[]) {
     glutSpecialFunc(specialFunc);
     glutMouseFunc(mouseFunc);
     glutMotionFunc(motionFunc);
+    glutPassiveMotionFunc(passiveMotionFunc);
     glutDisplayFunc(displayFunc);
     createMenu();
     initFunc();
@@ -159,30 +187,6 @@ void keyboardFunc(unsigned char key, int x, int y) {
         exit(0);
 }
 
-void mouseFunc(int button, int state, int x, int y) {
-    mouse.x = x;
-    mouse.y = y;
-    mouse.button = button;
-    mouse.state = state;
-
-    if (window.drawState) {
-        if (mouse.x >= 10 && mouse.x <= 30) {
-            if (window.height - mouse.y >= 338 && window.height - mouse.y <= 342)
-                glLineWidth(4.0);
-            else if (window.height - mouse.y >= 310 && window.height - mouse.y <= 320)
-                glLineWidth(10.0);
-            else if (window.height - mouse.y >= 270 && window.height - mouse.y <= 290)
-                glLineWidth(20.0);
-            else if (window.height - mouse.y >= 230 && window.height - mouse.y <= 250)
-                glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
-            else if (window.height - mouse.y >= 190 && window.height - mouse.y <= 210)
-                glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
-            else if (window.height - mouse.y >= 150 && window.height - mouse.y <= 170)
-                glColor4f(0.0f, 0.0f, 1.0f, 1.0f);
-        }
-    }
-}
-
 void specialFunc(int key, int x, int y) {
     switch (key) {
         case GLUT_KEY_F9:
@@ -193,12 +197,93 @@ void specialFunc(int key, int x, int y) {
     }
 }
 
+void mouseFunc(int button, int state, int x, int y) {
+    printf("Mouse x: %d, y: %d\n", x,  y);
+    mouse.x = x;
+    mouse.y = y;
+    mouse.button = button;
+    mouse.state = state;
+
+    if (mouse.x >= 10 && mouse.x <= 30) {
+        if (window.height - mouse.y >= 338 && window.height - mouse.y <= 342) {
+            window.deleteState = false;
+            window.drawState = true;
+            pen.px = 4.0;
+        }
+        else if (window.height - mouse.y >= 310 && window.height - mouse.y <= 320) {
+            window.deleteState = false;
+            window.drawState = true;
+            pen.px = 10.0;
+        }
+        else if (window.height - mouse.y >= 270 && window.height - mouse.y <= 290) {
+            window.deleteState = false;
+            window.drawState = true;
+            pen.px = 20.0;
+        }
+        else if (window.height - mouse.y >= 230 && window.height - mouse.y <= 250) {
+            window.deleteState = false;
+            window.drawState = true;
+            pen.r = 1.0f;
+            pen.g = 0.0f;
+            pen.b = 0.0f;
+            pen.a = 1.0f;
+        }
+        else if (window.height - mouse.y >= 190 && window.height - mouse.y <= 210) {
+            window.deleteState = false;
+            window.drawState = true;
+            pen.r = 0.0f;
+            pen.g = 1.0f;
+            pen.b = 0.0f;
+            pen.a = 1.0f;
+        }
+        else if (window.height - mouse.y >= 150 && window.height - mouse.y <= 170) {
+            window.deleteState = false;
+            window.drawState = true;
+            pen.r = 0.0f;
+            pen.g = 0.0f;
+            pen.b = 1.0f;
+            pen.a = 1.0f;
+        }
+        else if (window.height - mouse.y >= 110 && window.height - mouse.y <= 130) {
+            window.deleteState = true;
+            window.drawState = false;
+        }
+    }
+
+    if (window.deleteState) {
+        if (mouse.button == GLUT_LEFT_BUTTON && mouse.state == GLUT_DOWN) {
+            deleteRect.x1 = mouse.x;
+            deleteRect.y1 = window.height - mouse.y;
+        }
+        else if (mouse.button == GLUT_LEFT_BUTTON && mouse.state == GLUT_UP) {
+            deleteRect.x2 = mouse.x;
+            deleteRect.y2 = window.height - mouse.y;
+            drawDeleteRect(deleteRect.x1, deleteRect.y1, deleteRect.x2, deleteRect.y2);
+        }
+    }
+
+}
+
 void motionFunc(int x, int y) {
+    printf("Motion x: %d, y: %d\n", x,  y);
     if (mouse.state == GLUT_DOWN && window.drawState) {
         if (mouse.button == GLUT_LEFT_BUTTON) {
             drawLine(mouse.x, window.height - mouse.y, x, window.height - y);
         }
     }
+    mouse.x = x;
+    mouse.y = y;
+    if (window.deleteState) {
+        if (mouse.state == GLUT_DOWN && mouse.button == GLUT_LEFT_BUTTON) {
+            deleteRect.x2 = mouse.x;
+            deleteRect.y2 = window.height - mouse.y;
+            drawDeleteRectDotted(deleteRect.x1, deleteRect.y1, deleteRect.x2, deleteRect.y2);
+        }
+    }
+}
+
+void passiveMotionFunc(int x, int y) {
+    printf("Passive Motion x: %d, y: %d\n", x,  y);
     mouse.x = x;
     mouse.y = y;
 }
@@ -263,12 +348,12 @@ void drawMSLogo(double x, double y) {
     glVertex2f(0 + x, 2 * sideLength + space + y);
     glEnd();
 
-    glColor4f(window.r, window.g, window.b, 1.0f);
-    window.drawState = false;
     glFlush();
 }
 
 void drawLine(int x1, int y1, int x2, int y2) {
+    glColor4f(pen.r, pen.g, pen.b, 1.0f);
+    glLineWidth(pen.px);
     glBegin(GL_LINES);
     glVertex2f(x1, y1);
     glVertex2f(x2, y2);
@@ -412,7 +497,59 @@ void drawToolbar() {
     glVertex2f(x + 10, y - 10);
     glEnd();
 
+    // delete rectangle
+    // 10 <= x <= 30
+    // 110 <= y <= 130
+    x = 20;
+    y = window.height - 240;
+    glLineWidth(1.0);
+    glColor4f(1.0f, 0.0f, 1.0f, 1.0f);
+    glLineStipple(1, 0xAAAA);
+    glEnable(GL_LINE_STIPPLE);
+    glBegin(GL_LINE_LOOP);
+    glVertex2f(x - 10, y - 10);
+    glVertex2f(x - 10, y + 10);
+    glVertex2f(x + 10, y + 10);
+    glVertex2f(x + 10, y - 10);
+    glEnd();
+    glDisable(GL_LINE_STIPPLE);
+
     glFlush();
+}
+
+void drawDeleteRect(double x1, double y1, double x2, double y2) {
+    glColor4f(window.r, window.g, window.b, 1.0f);
+    glBegin(GL_POLYGON);
+        glVertex2f(x1, y1);
+        glVertex2f(x2, y1);
+        glVertex2f(x2, y2);
+        glVertex2f(x1, y2);
+    glEnd();
+    glFlush();
+}
+
+void drawDeleteRectDotted(double x1, double y1, double x2, double y2) {
+    // References:
+    // http://3dengine.org/Drawing_dotted_lines_(OpenGL)
+    // http://www.opengl.org.ru/docs/pg/0204.html
+
+    glPushMatrix();
+    glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+    glLineWidth(1.0);
+    // glPushAttrib(GL_ENABLE_BIT);
+    glLineStipple(1, 0xAAAA);
+    glEnable(GL_LINE_STIPPLE);
+    // glColor4f(window.r, window.g, window.b, 1.0f);
+    glBegin(GL_LINE_LOOP);
+        glVertex2f(x1, y1);
+        glVertex2f(x2, y1);
+        glVertex2f(x2, y2);
+        glVertex2f(x1, y2);
+    glEnd();
+    // glPopAttrib();
+    glDisable(GL_LINE_STIPPLE);
+    glFlush();
+    glPopMatrix();
 }
 
 void createMenu() {
@@ -424,6 +561,8 @@ void createMenu() {
     glutAddMenuEntry("Draw a square", 16);
     glutAddMenuEntry("Draw a triangle", 17);
     glutAddMenuEntry("Erase", 7);
+    glutAddMenuEntry("Delete Mode", 18);
+    glutAddMenuEntry("Exit Delete Mode", 19);
     glutAddMenuEntry("Brush Size 4px", 8);
     glutAddMenuEntry("Brush Size 10px", 9);
     glutAddMenuEntry("Brush Size 20px", 10);
@@ -473,14 +612,19 @@ void menuFunc(int id) {
             exit(0);
             break;
         case 6:
+            window.deleteState = false;
             window.drawState = true;
             glColor3f(1.0f, 0.0f, 0.0f);
             glLineWidth(4.0);
             break;
         case 7:
+            window.deleteState = false;
             window.drawState = true;
-            glColor3f(window.r, window.g, window.b);
-            glLineWidth(20.0);
+            pen.r = window.r;
+            pen.g = window.g;
+            pen.b = window.b;
+            pen.a = window.a;
+            pen.px = 20.0;
             break;
         case 8:
             glLineWidth(4.0);
@@ -514,6 +658,14 @@ void menuFunc(int id) {
         case 17:
             drawTriangle(mouse.x, window.height - mouse.y, 50);
             break;
+        case 18:
+            window.drawState = false;
+            window.deleteState = true;
+            glColor4f(window.r, window.g, window.b, 1.0f);
+            break;
+        case 19:
+            window.drawState = false;
+            window.deleteState = false;
         default:
             break;
     }
