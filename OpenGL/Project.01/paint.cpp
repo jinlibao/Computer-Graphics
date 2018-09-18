@@ -22,8 +22,6 @@
 
 #include <cmath>
 
-
-
 using namespace std;
 
 typedef struct {
@@ -59,10 +57,11 @@ typedef struct {
 } glutPen;
 
 typedef struct {
-    int x;
-    int y;
-    int width;
-    int height;
+    int left;
+    int right;
+    int bottom;
+    int top;
+    int edge;
 } glutToolbar;
 
 glutWindow window;
@@ -84,6 +83,7 @@ void drawLine(int x1, int y1, int x2, int y2);
 void drawTriangle(double x1, double y1, double s);
 void drawSquare(double x, double y, double s);
 void drawCircle(double ox, double y, double r);
+void drawToolbar();
 
 int main(int argc, char* argv[]) {
     window.x = 0;
@@ -100,10 +100,11 @@ int main(int argc, char* argv[]) {
     window.b = 0.3f;
     window.drawState = false;
 
-    toolbar.x = 10;
-    toolbar.y = 10;
-    toolbar.width = 50;
-    toolbar.height = 100;
+    toolbar.left = 0;
+    toolbar.bottom = 0;
+    toolbar.right = 40;
+    toolbar.top = 360;
+    toolbar.edge = 5;
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
@@ -115,11 +116,9 @@ int main(int argc, char* argv[]) {
     glutMouseFunc(mouseFunc);
     glutMotionFunc(motionFunc);
     glutDisplayFunc(displayFunc);
-    glutReshapeFunc(reshapeFunc);
-    initFunc();
     createMenu();
-    // glutCreateSubWindow(window.id, toolbar.x, toolbar.y, toolbar.width, toolbar.height);
-    // glutDisplayFunc(subWindowDisplayFunc);
+    initFunc();
+    // glutReshapeFunc(reshapeFunc);
     glutMainLoop();
     return 0;
 }
@@ -130,136 +129,30 @@ void initFunc() {
     // glEnable(GL_DEPTH_TEST);
     // glDepthFunc(GL_LEQUAL);
     // glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(window.r, window.g, window.b, 1.0f);
     glColor4f(window.r, window.g, window.b, 1.0f);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(0.0, window.old_width, 0.0, window.old_height);
-    glViewport(window.x, window.y, window.width, window.height);
-    // glMatrixMode(GL_MODELVIEW);
     glFlush();
 }
 
-void createMenu() {
-    glutCreateMenu(menuFunc);
-    glutAddMenuEntry("Full Screen", 1);
-    glutAddMenuEntry("Exit Full Screen", 2);
-    glutAddMenuEntry("Draw Microsoft Logo", 3);
-    glutAddMenuEntry("Draw a circle", 15);
-    glutAddMenuEntry("Draw a square", 16);
-    glutAddMenuEntry("Draw a triangle", 17);
-    glutAddMenuEntry("Clear Screen", 4);
-    glutAddMenuEntry("Exit", 5);
-    glutAddMenuEntry("Draw", 6);
-    glutAddMenuEntry("Erase", 7);
-    glutAddMenuEntry("Brush Size 1px", 8);
-    glutAddMenuEntry("Brush Size 5px", 9);
-    glutAddMenuEntry("Brush Size 10px", 10);
-    glutAddMenuEntry("Brush Color Red", 11);
-    glutAddMenuEntry("Brush Color Green", 12);
-    glutAddMenuEntry("Brush Color Blue", 13);
-    glutAddMenuEntry("Exit Drawing Mode", 14);
-    glutAttachMenu(GLUT_RIGHT_BUTTON);
-}
-
-void menuFunc(int id) {
-    switch (id) {
-        case 1:
-            glutFullScreen();
-            // glutPostRedisplay();
-            // glFlush();
-            break;
-        case 2:
-            glutPositionWindow(window.x, window.y);
-            glutReshapeWindow(window.old_width, window.old_height);
-            // glMatrixMode(GL_PROJECTION);
-            // glLoadIdentity();
-            // if (window.aspect < window.width / window.height) {
-            //     glViewport(window.x, window.y, (GLdouble) window.height * window.aspect, window.height);
-            //     gluOrtho2D(0.0, (GLdouble) window.height * window.aspect, 0.0, window.height);
-            // }
-            // else {
-            //     glViewport(window.x, window.y, window.width, (GLdouble) window.width / window.aspect);
-            //     gluOrtho2D(0.0, window.width, 0.0, (GLdouble) window.width / window.aspect);
-            // }
-            // glutPostRedisplay();
-            break;
-        case 3:
-            drawMSLogo(mouse.x, window.height - mouse.y);
-            break;
-        case 4:
-            glClear(GL_COLOR_BUFFER_BIT);
-            glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-            glFlush();
-            glutPostRedisplay();
-            break;
-        case 5:
-            glutDestroyWindow(window.id);
-            exit(0);
-            break;
-        case 6:
-            window.drawState = true;
-            glColor3f(1.0f, 0.0f, 0.0f);
-            glLineWidth(1.0);
-            break;
-        case 7:
-            window.drawState = true;
-            glColor3f(window.r, window.g, window.b);
-            glLineWidth(20.0);
-            break;
-        case 8:
-            glLineWidth(1.0);
-            break;
-        case 9:
-            glLineWidth(5.0);
-            break;
-        case 10:
-            glLineWidth(10.0);
-            break;
-        case 11:
-            glColor3f(1.0f, 0.0f, 0.0f);
-            break;
-        case 12:
-            glColor3f(0.0f, 1.0f, 0.0f);
-            break;
-        case 13:
-            glColor3f(0.0f, 0.0f, 1.0f);
-            break;
-        case 14:
-            glColor3f(window.r, window.g, window.b);
-            window.drawState = false;
-            glColor3f(0.0f, 0.0f, 1.0f);
-            break;
-        case 15:
-            drawCircle(mouse.x, window.height - mouse.y, 50);
-            break;
-        case 16:
-            drawSquare(mouse.x, window.height - mouse.y, 100);
-            break;
-        case 17:
-            drawTriangle(mouse.x, window.height - mouse.y, 50);
-            break;
-        default:
-            break;
-    }
-    // glutPostRedisplay();
-}
 void displayFunc() {
     glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-    glColor4f(window.r, window.g, window.b, 1.0f);
-    glPushMatrix();
+    glClearColor(window.r, window.g, window.b, 1.0f);
+
+    // draw toolbar
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glViewport(0, 0, 140, 360);
+    gluOrtho2D(0.0, 140.0, 0.0, 360.0);
+    drawToolbar();
+    glLoadIdentity();
+
+    // set the viewport for drawing
+    glViewport(40, 0, 600, 360);
+    gluOrtho2D(40.0, 640.0, 0.0, 360.0);
     glFlush();
 }
-
-// void subWindowDisplayFunc() {
-//     glClear(GL_COLOR_BUFFER_BIT);
-//     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-//     glColor4f(window.r, window.g, window.b, 1.0f);
-//     glPushMatrix();
-//     glFlush();
-// }
 
 void keyboardFunc(unsigned char key, int x, int y) {
     switch (key) {
@@ -397,7 +290,6 @@ void drawSquare(double x, double y, double s) {
 
 void drawCircle(double x, double y, double r) {
     glColor4f(1.0f, 1.0f, 0.0f, 1.0f);
-    glLineWidth(1.0);
     const int N = 512;
     double theta = 8 * atan(1) / N;
     double x0 = r;
@@ -411,4 +303,191 @@ void drawCircle(double x, double y, double r) {
     }
     glEnd();
     glFlush();
+}
+
+void drawToolbar() {
+
+    double x, y, r;
+    const int N = 512;
+    double theta = 8 * atan(1) / N;
+
+    glBegin(GL_POLYGON);
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    glVertex2f(toolbar.left + toolbar.edge, toolbar.bottom + toolbar.edge);
+    glVertex2f(toolbar.left + toolbar.edge, toolbar.top - toolbar.edge);
+    glVertex2f(toolbar.right - toolbar.edge, toolbar.top - toolbar.edge);
+    glVertex2f(toolbar.right - toolbar.edge, toolbar.bottom + toolbar.edge);
+    glEnd();
+
+    glBegin(GL_POLYGON);
+    glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+    x = 20;
+    y = window.height - 20;
+    r = 2;
+    for (int i = 0; i < N; ++i) {
+        double nx = r * cos(i * theta);
+        double ny = r * sin(i * theta);
+        glVertex2f(x + nx, y + ny);
+    }
+    glEnd();
+
+    glBegin(GL_POLYGON);
+    glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+    x = 20;
+    y = window.height - 45;
+    r = 5;
+    for (int i = 0; i < N; ++i) {
+        double nx = r * cos(i * theta);
+        double ny = r * sin(i * theta);
+        glVertex2f(x + nx, y + ny);
+    }
+    glEnd();
+
+    glBegin(GL_POLYGON);
+    glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+    x = 20;
+    y = window.height - 80;
+    r = 10;
+    for (int i = 0; i < N; ++i) {
+        double nx = r * cos(i * theta);
+        double ny = r * sin(i * theta);
+        glVertex2f(x + nx, y + ny);
+    }
+    glEnd();
+
+    glBegin(GL_POLYGON);
+    x = 20;
+    y = window.height - 120;
+    glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
+    glVertex2f(x - 10, y - 10);
+    glVertex2f(x - 10, y + 10);
+    glVertex2f(x + 10, y + 10);
+    glVertex2f(x + 10, y - 10);
+    glEnd();
+
+    glBegin(GL_POLYGON);
+    x = 20;
+    y = window.height - 160;
+    glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
+    glVertex2f(x - 10, y - 10);
+    glVertex2f(x - 10, y + 10);
+    glVertex2f(x + 10, y + 10);
+    glVertex2f(x + 10, y - 10);
+    glEnd();
+
+    glBegin(GL_POLYGON);
+    x = 20;
+    y = window.height - 200;
+    glColor4f(0.0f, 0.0f, 1.0f, 1.0f);
+    glVertex2f(x - 10, y - 10);
+    glVertex2f(x - 10, y + 10);
+    glVertex2f(x + 10, y + 10);
+    glVertex2f(x + 10, y - 10);
+    glEnd();
+
+    glFlush();
+}
+
+void createMenu() {
+    glutCreateMenu(menuFunc);
+    glutAddMenuEntry("Full Screen", 1);
+    glutAddMenuEntry("Exit Full Screen", 2);
+    glutAddMenuEntry("Draw Microsoft Logo", 3);
+    glutAddMenuEntry("Draw a circle", 15);
+    glutAddMenuEntry("Draw a square", 16);
+    glutAddMenuEntry("Draw a triangle", 17);
+    glutAddMenuEntry("Clear Screen", 4);
+    glutAddMenuEntry("Exit", 5);
+    glutAddMenuEntry("Draw", 6);
+    glutAddMenuEntry("Erase", 7);
+    glutAddMenuEntry("Brush Size 1px", 8);
+    glutAddMenuEntry("Brush Size 5px", 9);
+    glutAddMenuEntry("Brush Size 10px", 10);
+    glutAddMenuEntry("Brush Color Red", 11);
+    glutAddMenuEntry("Brush Color Green", 12);
+    glutAddMenuEntry("Brush Color Blue", 13);
+    glutAddMenuEntry("Exit Drawing Mode", 14);
+    glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
+void menuFunc(int id) {
+    switch (id) {
+        case 1:
+            glutFullScreen();
+            // glutPostRedisplay();
+            // glFlush();
+            break;
+        case 2:
+            glutPositionWindow(window.x, window.y);
+            glutReshapeWindow(window.old_width, window.old_height);
+            // glMatrixMode(GL_PROJECTION);
+            // glLoadIdentity();
+            // if (window.aspect < window.width / window.height) {
+            //     glViewport(window.x, window.y, (GLdouble) window.height * window.aspect, window.height);
+            //     gluOrtho2D(0.0, (GLdouble) window.height * window.aspect, 0.0, window.height);
+            // }
+            // else {
+            //     glViewport(window.x, window.y, window.width, (GLdouble) window.width / window.aspect);
+            //     gluOrtho2D(0.0, window.width, 0.0, (GLdouble) window.width / window.aspect);
+            // }
+            // glutPostRedisplay();
+            break;
+        case 3:
+            drawMSLogo(mouse.x, window.height - mouse.y);
+            break;
+        case 4:
+            glClear(GL_COLOR_BUFFER_BIT);
+            glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+            glFlush();
+            glutPostRedisplay();
+            break;
+        case 5:
+            glutDestroyWindow(window.id);
+            exit(0);
+            break;
+        case 6:
+            window.drawState = true;
+            glColor3f(1.0f, 0.0f, 0.0f);
+            glLineWidth(1.0);
+            break;
+        case 7:
+            window.drawState = true;
+            glColor3f(window.r, window.g, window.b);
+            glLineWidth(20.0);
+            break;
+        case 8:
+            glLineWidth(1.0);
+            break;
+        case 9:
+            glLineWidth(5.0);
+            break;
+        case 10:
+            glLineWidth(10.0);
+            break;
+        case 11:
+            glColor3f(1.0f, 0.0f, 0.0f);
+            break;
+        case 12:
+            glColor3f(0.0f, 1.0f, 0.0f);
+            break;
+        case 13:
+            glColor3f(0.0f, 0.0f, 1.0f);
+            break;
+        case 14:
+            glColor3f(window.r, window.g, window.b);
+            window.drawState = false;
+            glColor3f(0.0f, 0.0f, 1.0f);
+            break;
+        case 15:
+            drawCircle(mouse.x, window.height - mouse.y, 50);
+            break;
+        case 16:
+            drawSquare(mouse.x, window.height - mouse.y, 100);
+            break;
+        case 17:
+            drawTriangle(mouse.x, window.height - mouse.y, 50);
+            break;
+        default:
+            break;
+    }
 }
