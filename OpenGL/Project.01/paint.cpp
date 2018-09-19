@@ -41,6 +41,9 @@ typedef struct {
     double a;
     bool drawState;
     bool deleteState;
+    bool circleState;
+    bool triangleState;
+    bool squareState;
     const char* title;
 } glutWindow;
 
@@ -60,25 +63,32 @@ typedef struct {
 } glutPen;
 
 typedef struct {
-    int left;
-    int right;
-    int bottom;
-    int top;
-    int edge;
+    double left;
+    double right;
+    double bottom;
+    double top;
+    double edge;
 } glutToolbar;
 
 typedef struct {
-    int x1;
-    int y1;
-    int x2;
-    int y2;
+    double x1;
+    double y1;
+    double x2;
+    double y2;
 } glutDeleteRect;
+
+typedef struct {
+    double x;
+    double y;
+    double s;
+} glutShape;
 
 glutWindow window;
 glutMouse mouse;
 glutPen pen;
 glutToolbar toolbar;
 glutDeleteRect deleteRect;
+glutShape circle, square, triangle;
 
 void initFunc();
 void createMenu();
@@ -116,6 +126,9 @@ int main(int argc, char* argv[]) {
     window.a = 1.0f;
     window.drawState = false;
     window.deleteState = false;
+    window.circleState = false;
+    window.squareState = false;
+    window.triangleState = false;
 
     // initialize the parameters for pen
     pen.r = 1.0f;
@@ -206,62 +219,126 @@ void mouseFunc(int button, int state, int x, int y) {
 
     if (mouse.x >= 10 && mouse.x <= 30) {
         if (window.height - mouse.y >= 338 && window.height - mouse.y <= 342) {
-            window.deleteState = false;
             window.drawState = true;
+            window.deleteState = false;
+            window.squareState = false;
+            window.triangleState = false;
+            window.circleState = false;
             pen.px = 4.0;
         }
         else if (window.height - mouse.y >= 310 && window.height - mouse.y <= 320) {
-            window.deleteState = false;
             window.drawState = true;
+            window.deleteState = false;
+            window.squareState = false;
+            window.triangleState = false;
+            window.circleState = false;
             pen.px = 10.0;
         }
-        else if (window.height - mouse.y >= 270 && window.height - mouse.y <= 290) {
-            window.deleteState = false;
+        else if (window.height - mouse.y >= 280 && window.height - mouse.y <= 300) {
             window.drawState = true;
+            window.deleteState = false;
+            window.squareState = false;
+            window.triangleState = false;
+            window.circleState = false;
             pen.px = 20.0;
         }
-        else if (window.height - mouse.y >= 230 && window.height - mouse.y <= 250) {
-            window.deleteState = false;
-            window.drawState = true;
+        else if (window.height - mouse.y >= 250 && window.height - mouse.y <= 270) {
+            if (window.deleteState || (!window.squareState && !window.triangleState && !window.circleState))
+                window.drawState = true, window.deleteState = false;
             pen.r = 1.0f;
             pen.g = 0.0f;
             pen.b = 0.0f;
             pen.a = 1.0f;
         }
-        else if (window.height - mouse.y >= 190 && window.height - mouse.y <= 210) {
-            window.deleteState = false;
-            window.drawState = true;
+        else if (window.height - mouse.y >= 220 && window.height - mouse.y <= 240) {
+            if (window.deleteState || (!window.squareState && !window.triangleState && !window.circleState))
+                window.drawState = true, window.deleteState = false;
             pen.r = 0.0f;
             pen.g = 1.0f;
             pen.b = 0.0f;
             pen.a = 1.0f;
         }
-        else if (window.height - mouse.y >= 150 && window.height - mouse.y <= 170) {
-            window.deleteState = false;
-            window.drawState = true;
+        else if (window.height - mouse.y >= 190 && window.height - mouse.y <= 210) {
+            if (window.deleteState || (!window.squareState && !window.triangleState && !window.circleState))
+                window.drawState = true, window.deleteState = false;
             pen.r = 0.0f;
             pen.g = 0.0f;
             pen.b = 1.0f;
             pen.a = 1.0f;
         }
-        else if (window.height - mouse.y >= 110 && window.height - mouse.y <= 130) {
-            window.deleteState = true;
+        else if (window.height - mouse.y >= 160 && window.height - mouse.y <= 180) {
             window.drawState = false;
+            window.deleteState = true;
+            window.squareState = false;
+            window.triangleState = false;
+            window.circleState = false;
+        }
+        else if (window.height - mouse.y >= 130 && window.height - mouse.y <= 150) {
+            window.drawState = false;
+            window.deleteState = false;
+            window.squareState = true;
+            window.triangleState = false;
+            window.circleState = false;
+        }
+        else if (window.height - mouse.y >= 100 && window.height - mouse.y <= 120) {
+            window.drawState = false;
+            window.deleteState = false;
+            window.squareState = false;
+            window.triangleState = true;
+            window.circleState = false;
+        }
+        else if (window.height - mouse.y >= 70 && window.height - mouse.y <= 90) {
+            window.drawState = false;
+            window.deleteState = false;
+            window.squareState = false;
+            window.triangleState = false;
+            window.circleState = true;
         }
     }
 
-    if (window.deleteState) {
-        if (mouse.button == GLUT_LEFT_BUTTON && mouse.state == GLUT_DOWN) {
+    if (mouse.button == GLUT_LEFT_BUTTON && mouse.state == GLUT_DOWN) {
+        if (window.deleteState) {
             deleteRect.x1 = mouse.x;
             deleteRect.y1 = window.height - mouse.y;
         }
-        else if (mouse.button == GLUT_LEFT_BUTTON && mouse.state == GLUT_UP) {
+        else if (window.circleState) {
+            circle.x = mouse.x;
+            circle.y = window.height - mouse.y;
+        }
+        else if (window.squareState) {
+            square.x = mouse.x;
+            square.y = window.height - mouse.y;
+        }
+        else if (window.triangleState) {
+            triangle.x = mouse.x;
+            triangle.y = window.height - mouse.y;
+        }
+    }
+    else if (mouse.button == GLUT_LEFT_BUTTON && mouse.state == GLUT_UP) {
+        if (window.deleteState) {
             deleteRect.x2 = mouse.x;
             deleteRect.y2 = window.height - mouse.y;
             drawDeleteRect(deleteRect.x1, deleteRect.y1, deleteRect.x2, deleteRect.y2);
         }
+        else if (window.circleState) {
+            circle.s = sqrt(pow(circle.x - mouse.x, 2) + pow(circle.y - (window.height - mouse.y), 2));
+            if (circle.s < 0.05)
+                circle.s = 5;
+            drawCircle(circle.x, circle.y, circle.s);
+        }
+        else if (window.squareState) {
+            square.s = sqrt(pow(square.x - mouse.x, 2) + pow(square.y - (window.height - mouse.y), 2));
+            if (square.s < 0.05)
+                square.s = 10;
+            drawSquare(square.x, square.y, square.s);
+        }
+        else if (window.triangleState) {
+            triangle.s = sqrt(pow(triangle.x - mouse.x, 2) + pow(triangle.y - (window.height - mouse.y), 2));
+            if (triangle.s < 0.05)
+                triangle.s = 10;
+            drawTriangle(triangle.x, triangle.y, triangle.s);
+        }
     }
-
 }
 
 void motionFunc(int x, int y) {
@@ -277,7 +354,11 @@ void motionFunc(int x, int y) {
         if (mouse.state == GLUT_DOWN && mouse.button == GLUT_LEFT_BUTTON) {
             deleteRect.x2 = mouse.x;
             deleteRect.y2 = window.height - mouse.y;
+            glMatrixMode(GL_MODELVIEW);
+            glPushMatrix();
             drawDeleteRectDotted(deleteRect.x1, deleteRect.y1, deleteRect.x2, deleteRect.y2);
+            glPopMatrix();
+            glFlush();
         }
     }
 }
@@ -295,7 +376,6 @@ void reshapeFunc(int width, int height) {
     window.height = height;
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    // glViewport(window.x, window.y, window.width, window.height);
     if (window.aspect < window.width / window.height) {
         glViewport(window.x, window.y, (GLdouble) window.height * window.aspect, window.height);
         gluOrtho2D(0.0, (GLdouble) window.height * window.aspect, 0.0, window.height);
@@ -352,7 +432,7 @@ void drawMSLogo(double x, double y) {
 }
 
 void drawLine(int x1, int y1, int x2, int y2) {
-    glColor4f(pen.r, pen.g, pen.b, 1.0f);
+    glColor4f(pen.r, pen.g, pen.b, pen.a);
     glLineWidth(pen.px);
     glBegin(GL_LINES);
     glVertex2f(x1, y1);
@@ -362,7 +442,7 @@ void drawLine(int x1, int y1, int x2, int y2) {
 }
 
 void drawTriangle(double x, double y, double s) {
-    glColor4f(0.0f, 1.0f, 1.0f, 1.0f);
+    glColor4f(pen.r, pen.g, pen.b, pen.a);
     glBegin(GL_TRIANGLES);
     glVertex2f(x, y);
     glVertex2f(x + s, y);
@@ -372,7 +452,7 @@ void drawTriangle(double x, double y, double s) {
 }
 
 void drawSquare(double x, double y, double s) {
-    glColor4f(1.0f, 0.0f, 1.0f, 1.0f);
+    glColor4f(pen.r, pen.g, pen.b, pen.a);
     glBegin(GL_QUADS);
     glVertex2f(x, y);
     glVertex2f(x + s, y);
@@ -383,7 +463,7 @@ void drawSquare(double x, double y, double s) {
 }
 
 void drawCircle(double x, double y, double r) {
-    glColor4f(1.0f, 1.0f, 0.0f, 1.0f);
+    glColor4f(pen.r, pen.g, pen.b, pen.a);
     const int N = 512;
     double theta = 8 * atan(1) / N;
     double x0 = r;
@@ -445,11 +525,11 @@ void drawToolbar() {
 
     // brush radius 10px
     // 10 <= x <= 30
-    // 270 <= y <= 290
+    // 280 <= y <= 300
     glBegin(GL_POLYGON);
     glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
     x = 20;
-    y = window.height - 80;
+    y = window.height - 70;
     r = 10;
     for (int i = 0; i < N; ++i) {
         double nx = r * cos(i * theta);
@@ -460,10 +540,10 @@ void drawToolbar() {
 
     // red color plate
     // 10 <= x <= 30
-    // 230 <= y <= 250
+    // 250 <= y <= 270
     glBegin(GL_POLYGON);
     x = 20;
-    y = window.height - 120;
+    y = window.height - 100;
     glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
     glVertex2f(x - 10, y - 10);
     glVertex2f(x - 10, y + 10);
@@ -473,10 +553,10 @@ void drawToolbar() {
 
     // green color plate
     // 10 <= x <= 30
-    // 190 <= y <= 210
+    // 220 <= y <= 240
     glBegin(GL_POLYGON);
     x = 20;
-    y = window.height - 160;
+    y = window.height - 130;
     glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
     glVertex2f(x - 10, y - 10);
     glVertex2f(x - 10, y + 10);
@@ -486,10 +566,10 @@ void drawToolbar() {
 
     // blue color plate
     // 10 <= x <= 30
-    // 150 <= y <= 170
+    // 190 <= y <= 210
     glBegin(GL_POLYGON);
     x = 20;
-    y = window.height - 200;
+    y = window.height - 160;
     glColor4f(0.0f, 0.0f, 1.0f, 1.0f);
     glVertex2f(x - 10, y - 10);
     glVertex2f(x - 10, y + 10);
@@ -499,9 +579,9 @@ void drawToolbar() {
 
     // delete rectangle
     // 10 <= x <= 30
-    // 110 <= y <= 130
+    // 170 <= y <= 180
     x = 20;
-    y = window.height - 240;
+    y = window.height - 190;
     glLineWidth(1.0);
     glColor4f(1.0f, 0.0f, 1.0f, 1.0f);
     glLineStipple(1, 0xAAAA);
@@ -513,6 +593,43 @@ void drawToolbar() {
     glVertex2f(x + 10, y - 10);
     glEnd();
     glDisable(GL_LINE_STIPPLE);
+
+    // delete rectangle
+    // 10 <= x <= 30
+    // 130 <= y <= 150
+    glBegin(GL_LINE_LOOP);
+    x = 20;
+    y = window.height - 220;
+    glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+    glVertex2f(x - 10, y - 10);
+    glVertex2f(x - 10, y + 10);
+    glVertex2f(x + 10, y + 10);
+    glVertex2f(x + 10, y - 10);
+    glEnd();
+
+    // delete rectangle
+    // 10 <= x <= 30
+    // 100 <= y <= 120
+    glBegin(GL_LINE_LOOP);
+    x = 20;
+    y = window.height - 250;
+    glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+    glVertex2f(x - 10, y - 10);
+    glVertex2f(x + 10, y - 10);
+    glVertex2f(x, y - 10 + 10 * sqrt(3));
+    glEnd();
+
+    // delete rectangle
+    // 10 <= x <= 30
+    // 70 <= y <= 90
+    glBegin(GL_LINE_LOOP);
+    x = 20;
+    y = window.height - 280;
+    glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+    for (int i = 0; i < N; ++i) {
+        glVertex2f(x + 10 * cos(theta * i), y + 10 * sin(theta * i));
+    }
+    glEnd();
 
     glFlush();
 }
@@ -536,7 +653,7 @@ void drawDeleteRectDotted(double x1, double y1, double x2, double y2) {
     glPushMatrix();
     glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
     glLineWidth(1.0);
-    // glPushAttrib(GL_ENABLE_BIT);
+    glPushAttrib(GL_ENABLE_BIT);
     glLineStipple(1, 0xAAAA);
     glEnable(GL_LINE_STIPPLE);
     // glColor4f(window.r, window.g, window.b, 1.0f);
@@ -546,10 +663,11 @@ void drawDeleteRectDotted(double x1, double y1, double x2, double y2) {
         glVertex2f(x2, y2);
         glVertex2f(x1, y2);
     glEnd();
-    // glPopAttrib();
     glDisable(GL_LINE_STIPPLE);
+    glPopAttrib();
     glFlush();
     glPopMatrix();
+    glFlush();
 }
 
 void createMenu() {
@@ -627,22 +745,31 @@ void menuFunc(int id) {
             pen.px = 20.0;
             break;
         case 8:
-            glLineWidth(4.0);
+            pen.px = 4.0;
             break;
         case 9:
-            glLineWidth(10.0);
+            pen.px = 10.0;
             break;
         case 10:
-            glLineWidth(20.0);
+            pen.px = 20.0;
             break;
         case 11:
-            glColor3f(1.0f, 0.0f, 0.0f);
+            pen.r = 1.0f;
+            pen.g = 0.0f;
+            pen.b = 0.0f;
+            pen.a = 1.0f;
             break;
         case 12:
-            glColor3f(0.0f, 1.0f, 0.0f);
+            pen.r = 0.0f;
+            pen.g = 1.0f;
+            pen.b = 0.0f;
+            pen.a = 1.0f;
             break;
         case 13:
-            glColor3f(0.0f, 0.0f, 1.0f);
+            pen.r = 0.0f;
+            pen.g = 0.0f;
+            pen.b = 1.0f;
+            pen.a = 1.0f;
             break;
         case 14:
             glColor3f(window.r, window.g, window.b);
