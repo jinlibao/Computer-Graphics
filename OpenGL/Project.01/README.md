@@ -1,19 +1,42 @@
-# COSC 5450-01 Computer Graphics Project 01
+# Paint App by Libao Jin
 
-## Requirements
+## Compile
 
-Out of 50 possible points. Due Sept 18, 2018 by 11:59pm.
+The code is developed  on macOS High Sierra. Here is the makefile:
 
-* Purpose: is to understand how the event loop works and what role interactivity places a part with how the display functions.
-* Overall: Create your very own paint program. Your project should have the following 5 elements:
+```
+# makefile
+# Libao Jin, 2018-09-04 11:31
+#
 
-1. (a) DRAW: Draw a continuous line with the mouse. When you click the mouse button (and hold) using the mouse it must continuously draw until mouse button is lifted without gaps in the line. Hint: Check that if you draw fast that there are not gaps between one movement to the next. (b) ERASE: Additionally you should be able to erase with the mouse.
-2. Be able to change size of brush (at least 3 sizes), color of brush (at least 3 different colors), and have at least 3 options of filled paint shape {circular, square, triangle, polygon, etc.}. Hint: This is where parameterizing your code comes in handy! You can create your own shape (i.e. a stamp tool). Note: Continuous lines do not need to be drawn with your optional shapes- but 2 points extra bonus if you do!
-3. As a part of your project, you must have a toolbar on the side where you have drawn shapes/icons (these can be very simple) and you have identified this ‘pick’ region to execute your code when the mouse clicks in this area. Note you do not have to create multiple viewports for your toolbar.
-Attached is a picture of just one example of what your toolbar area might look like. You can create how you think would be best.
-Additional Tasks for 5450:
-4. Incorporate a delete tool which will use the mouse to identify a rectangular region and delete what was drawn
-in that region. Hint: Your solution for 1b) should be similar except with use of glRect function.
-5. Set up two viewports – one for the toolbar and one for the drawing area
+CC = clang
+CFLAGS = -framework OpenGL -framework GLUT -Wno-deprecated
+RM = rm -rf
 
-You will be graded on elegance of code and the completion of implementation details for elements specified. Elegant code should include programming concepts and formation of classes and functions that you have learned in Data Structures and Algorithms course. Point values are distributed among the categories as follows
+ALLPROGS = paint
+
+.DEFAULT_GOAL := all
+
+all: $(ALLPROGS)
+
+paint: paint.cpp
+	$(CC) $(CFLAGS) -o $@ $<
+
+clean:
+	$(RM) $(ALLPROGS:=.dSYM) $(ALLPROGS:=.o)
+
+distclean: clean
+	$(RM) $(ALLPROGS)
+```
+
+## Functionalities
+
+* Draw: Draw a continuous line with the mouse. First, we need to enter "Drawing Mode" by right click and then press "Drawing mode". Then click the mouse button (and hold), then it would draw the continuous lines. Another way to enter the "Drawing Mode" is to click the brush size button on the toolbar.
+* Erase: To enter the "Erase Mode", we need to right click and "Erase Mode".
+* Change the size/color/draw filled paint shape (circle, triangle, square, Microsoft Logo). To create a circle, you can try right click and "Draw - Circle" which will draw the circle with the default size 5px. Or you can go to the bottom part of the toolbar, select one of the types and click the left button on the mouse and hold to decide the size of the object.
+* A delete tool (needs to be optimized) would delete the content in the selected area.
+* Two view ports, one for the toolbar and one for the drawing area.
+
+## To be improved
+
+* The reshape functionality needs to be improved.

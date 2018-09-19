@@ -33,6 +33,10 @@ typedef struct {
     int old_height;
     int width;
     int height;
+    int left;
+    int right;
+    int top;
+    int bottom;
     double angle;
     double aspect;
     double r;
@@ -68,6 +72,7 @@ typedef struct {
     double bottom;
     double top;
     double edge;
+    double ratio;
 } glutToolbar;
 
 typedef struct {
@@ -115,6 +120,10 @@ int main(int argc, char* argv[]) {
     window.y = 0;
     window.width = 640;
     window.height = 360;
+    window.left = window.x;
+    window.bottom = window.y;
+    window.right = window.width;
+    window.top = window.height;
     window.near = 1.0f;
     window.far = 30.0f;
     window.angle = 0;
@@ -143,6 +152,7 @@ int main(int argc, char* argv[]) {
     toolbar.right = 40;
     toolbar.top = 360;
     toolbar.edge = 5;
+    toolbar.ratio = toolbar.right / window.right;
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
@@ -154,36 +164,36 @@ int main(int argc, char* argv[]) {
     glutMouseFunc(mouseFunc);
     glutMotionFunc(motionFunc);
     glutPassiveMotionFunc(passiveMotionFunc);
+    glutReshapeFunc(reshapeFunc);
     glutDisplayFunc(displayFunc);
     createMenu();
     initFunc();
-    // glutReshapeFunc(reshapeFunc);
     glutMainLoop();
     return 0;
 }
 
 void initFunc() {
     glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(window.r, window.g, window.b, 1.0f);
-    glColor4f(window.r, window.g, window.b, 1.0f);
+    glClearColor(window.r, window.g, window.b, window.a);
+    glColor4f(window.r, window.g, window.b, window.a);
     glFlush();
 }
 
 void displayFunc() {
     glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(window.r, window.g, window.b, 1.0f);
+    glClearColor(window.r, window.g, window.b, window.a);
 
     // draw toolbar
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glViewport(0, 0, 140, 360);
-    gluOrtho2D(0.0, 140.0, 0.0, 360.0);
+    glViewport(window.left, window.bottom, toolbar.ratio * window.right, window.top);
+    gluOrtho2D(toolbar.left, toolbar.right, toolbar.bottom, toolbar.top);
     drawToolbar();
-    glLoadIdentity();
 
     // set the viewport for drawing
-    glViewport(40, 0, 600, 360);
-    gluOrtho2D(40.0, 640.0, 0.0, 360.0);
+    glLoadIdentity();
+    glViewport(toolbar.ratio * window.right, window.bottom, (1 - toolbar.ratio) * window.right, window.top);
+    gluOrtho2D(toolbar.right, toolbar.right / toolbar.ratio, toolbar.bottom, toolbar.top);
     glFlush();
 }
 
@@ -377,17 +387,17 @@ void reshapeFunc(int width, int height) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     if (window.aspect < window.width / window.height) {
-        glViewport(window.x, window.y, (GLdouble) window.height * window.aspect, window.height);
-        gluOrtho2D(0.0, (GLdouble) window.height * window.aspect, 0.0, window.height);
+        window.right = (GLdouble) window.height * window.aspect;
+        window.top = (GLdouble) window.height;
+        glViewport(window.x, window.y, window.right, window.top);
+        //gluOrtho2D(0.0, (GLdouble) window.height * window.aspect, 0.0, window.height);
     }
     else {
-        glViewport(window.x, window.y, window.width, (GLdouble) window.width / window.aspect);
-        gluOrtho2D(0.0, window.width, 0.0, (GLdouble) window.width / window.aspect);
+        window.right = (GLdouble) window.width;
+        window.top = (GLdouble) window.width / window.aspect;
+        glViewport(window.x, window.y, window.right, window.top);
+        //gluOrtho2D(0.0, window.width, 0.0, (GLdouble) window.width / window.aspect);
     }
-    window.width = width;
-    window.height = height;
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
     glFlush();
     glutPostRedisplay();
 }
@@ -671,26 +681,32 @@ void drawDeleteRectDotted(double x1, double y1, double x2, double y2) {
 }
 
 void createMenu() {
-    glutCreateMenu(menuFunc);
+    int submenu_1 = glutCreateMenu(menuFunc);
+    glutAddMenuEntry("Circle", 15);
+    glutAddMenuEntry("Square", 16);
+    glutAddMenuEntry("Triangle", 17);
+    glutAddMenuEntry("Microsoft Logo", 3);
+    int submenu_2 = glutCreateMenu(menuFunc);
+    glutAddMenuEntry("4px", 8);
+    glutAddMenuEntry("10px", 9);
+    glutAddMenuEntry("20px", 10);
+    int submenu_3 = glutCreateMenu(menuFunc);
+    glutAddMenuEntry("Red", 11);
+    glutAddMenuEntry("Green", 12);
+    glutAddMenuEntry("Blue", 13);
+    int menu_1 = glutCreateMenu(menuFunc);
+    glutAddMenuEntry("Clear Screen", 4);
+    glutAddMenuEntry("Erase Mode", 7);
     glutAddMenuEntry("Drawing Mode", 6);
     glutAddMenuEntry("Exit Drawing Mode", 14);
-    glutAddMenuEntry("Draw Microsoft Logo", 3);
-    glutAddMenuEntry("Draw a circle", 15);
-    glutAddMenuEntry("Draw a square", 16);
-    glutAddMenuEntry("Draw a triangle", 17);
-    glutAddMenuEntry("Erase", 7);
+    glutAddSubMenu("Draw", submenu_1);
+    glutAddSubMenu("Brush Size", submenu_2);
+    glutAddSubMenu("Brush Color", submenu_3);
     glutAddMenuEntry("Delete Mode", 18);
     glutAddMenuEntry("Exit Delete Mode", 19);
-    glutAddMenuEntry("Brush Size 4px", 8);
-    glutAddMenuEntry("Brush Size 10px", 9);
-    glutAddMenuEntry("Brush Size 20px", 10);
-    glutAddMenuEntry("Brush Color Red", 11);
-    glutAddMenuEntry("Brush Color Green", 12);
-    glutAddMenuEntry("Brush Color Blue", 13);
-    glutAddMenuEntry("Clear Screen", 4);
     glutAddMenuEntry("Full Screen", 1);
     glutAddMenuEntry("Exit Full Screen", 2);
-    glutAddMenuEntry("Exit Painter App", 5);
+    glutAddMenuEntry("Exit", 5);
     glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 

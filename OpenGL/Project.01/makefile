@@ -20,6 +20,9 @@ all: $(ALLPROGS) # $(addsuffix FreeGLUT,$(ALLPROGS)) $(addsuffix Mixed,$(ALLPROG
 paint: paint.cpp
 	$(CC) $(CFLAGS) -o $@ $<
 
+ProjectionExampleClass: ProjectionExampleClass.cpp
+	$(CC) $(CFLAGS) -o $@ $<
+
 clean:
 	$(RM) $(ALLPROGS:=.dSYM) $(ALLPROGS:=.o)
 
