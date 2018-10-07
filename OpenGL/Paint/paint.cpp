@@ -10,9 +10,9 @@
 #include <iostream>
 #include <cmath>
 // OpenGL Libraries
-#ifdef __APPLE__
-#include <GL/glut.h>
-// #include <GLUT/glut.h>
+// #define X11 X11
+#if defined __APPLE__ && !defined X11
+#include <GLUT/glut.h>
 #include <OpenGL/glu.h>
 #include <OpenGL/gl.h>
 #else
@@ -221,7 +221,7 @@ void specialFunc(int key, int x, int y) {
 }
 
 void mouseFunc(int button, int state, int x, int y) {
-    printf("Mouse x: %d, y: %d\n", x,  y);
+    // printf("Mouse x: %d, y: %d\n", x,  y);
     mouse.x = x;
     mouse.y = y;
     mouse.button = button;
@@ -352,7 +352,7 @@ void mouseFunc(int button, int state, int x, int y) {
 }
 
 void motionFunc(int x, int y) {
-    printf("Motion x: %d, y: %d\n", x,  y);
+    // printf("Motion x: %d, y: %d\n", x,  y);
     if (mouse.state == GLUT_DOWN && window.drawState) {
         if (mouse.button == GLUT_LEFT_BUTTON) {
             drawLine(mouse.x, window.height - mouse.y, x, window.height - y);
@@ -374,7 +374,7 @@ void motionFunc(int x, int y) {
 }
 
 void passiveMotionFunc(int x, int y) {
-    printf("Passive Motion x: %d, y: %d\n", x,  y);
+    // printf("Passive Motion x: %d, y: %d\n", x,  y);
     mouse.x = x;
     mouse.y = y;
 }
