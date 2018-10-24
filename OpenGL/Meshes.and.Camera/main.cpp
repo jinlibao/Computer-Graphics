@@ -1,6 +1,16 @@
 // Libao Jin
 // ljin1@uwyo.edu
-// #define X11 X11
+#include "camera.h"
+#include "light.h"
+#include "material.h"
+#include "matrix.h"
+#include "mesh.h"
+#include <cmath>
+#include <cstdio>
+#include <cstring>
+#include <fstream>
+#include <iostream>
+
 #if defined __APPLE__ && !defined X11
 #include <GLUT/glut.h>
 #include <OpenGL/gl.h>
@@ -11,75 +21,17 @@
 #include <GL/glut.h>
 #endif
 
-#include "camera.h"
-// #include "light.h"
-// #include "material.h"
-#include "matrix.h"
-#include "mesh.h"
-#include <FreeImage.h>
-#include <cmath>
-#include <cstdio>
-#include <cstring>
-#include <fstream>
-#include <iostream>
-
 using namespace std;
 
 GLint const WIDTH = 640, HEIGHT = 480;
 GLint BitsPerPixel = 32;
-GLint modeSwitch = 0; // 1: OpenGL, 0: Camera Class
-
-// Material libertyMaterial(0.0, 0.0, 0.1, 1.0, 0.195441, 0.263741, 0.2537, 1.0,
-//                          0.0237312, 0.0522111, 0.0793909, 1.0, 0.2, 0.2, 0.2,
-//                          1.0, 50.0);
-// Material surfaceMaterial(0.0, 0.0, 0.0, 1.0, 0.8, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,
-//                          1.0, 0.2, 0.2, 0.2, 1.0);
-// Material glutWireOjectMaterial(0.0, 0.0, 0.0, 1.0, 0.8, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,
-//                          1.0, 0.2, 0.2, 0.2, 1.0);
-// Material mugMaterial(0.0, 0.0, 0.0, 1.0, 0.8, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,
-//                          1.0, 0.2, 0.2, 0.2, 1.0);
-
-GLfloat lib_mat_ambient[4] = {0.0, 0.0, 0.1, 1.0};
-GLfloat lib_mat_diffuse[4] = {0.195441, 0.263741, 0.2537, 1.0};
-GLfloat lib_mat_specular[4] = {0.0237312, 0.0522111, 0.0793909, 1.0};
-GLfloat lib_mat_emission[4] = {0.2, 0.2, 0.2, 1.0};
-GLfloat lib_mat_shininess = 50.0;
-
-GLfloat mat_ambient[4] = {0.0, 0.0, 0.0, 1.0};
-GLfloat mat_diffuse[4] = {0.8, 0.0, 0.0, 1.0};
-GLfloat mat_specular[4] = {1.0, 1.0, 1.0, 1.0};
-GLfloat mat_emission[4] = {0.2, 0.2, 0.2, 1.0};
-GLfloat mat_shininess = 20.0;
-
-GLfloat light_ambient[] = {0.2, 0.2, 0.2, 1.0};
-GLfloat light_diffuse[] = {1.0, 0.0, 0.0, 1.0};
-GLfloat light_specular[] = {1.0, 1.0, 1.0, 1.0};
-GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0};
-
-GLfloat bg_r = 1.0;
-GLfloat bg_g = 1.0;
-GLfloat bg_b = 1.0;
-GLfloat bg_a = 1.0;
-
-GLfloat ex = 100.0;
-GLfloat ey = 100.0;
-GLfloat ez = 100.0;
-GLfloat lx = 0.0;
-GLfloat ly = 0.0;
-GLfloat lz = 0.0;
-GLfloat ux = 0.0;
-GLfloat uy = 1.0;
-GLfloat uz = 0.0;
-Point eye(ex, ey, ez);
-Point look(lx, ly, lz);
-Vector up(ux, uy, uz);
-
-float theta = 10.0;
-float dist = 5.0;
 int frameNumber = 1;
-int row = 3, col = 3, layers = 3;
-Camera camera;
-Mesh mug, liberty, surfaceOfRevolution;
+
+#ifdef USEFREEIMAGE
+#undef USEFREEIMAGE1
+#define USEFREEIMAGE 1
+
+#include <FreeImage.h>
 
 void saveImage()
 {
@@ -106,6 +58,78 @@ void saveImage()
         cout << "Image successfully saved: " << filename << endl;
     FreeImage_DeInitialise();
 }
+
+#else
+#define USEFREEIMAGE 0
+void saveImage(){};
+#endif
+
+GLint modeSwitch = 0; // 1: OpenGL, 0: Camera Class
+
+Material emerald(0.0215, 0.1745, 0.0215, 1.0, 0.07568, 0.61424, 0.07568, 1.0,
+                 0.633, 0.727811, 0.633, 1.0, 0.0, 0.0, 0.0, 1.0, 10.0);
+Material silver(0.19225, 0.19225, 0.19225, 1.0, 0.50754, 0.50754, 0.50754, 1.0,
+                0.508273, 0.508273, 0.508273, 1.0, 0.2, 0.2, 0.2, 1.0, 50.0);
+Material libertyMaterial(0.0, 0.0, 0.1, 1.0, 0.195441, 0.263741, 0.2537, 1.0,
+                         0.0237312, 0.0522111, 0.0793909, 1.0, 0.2, 0.7, 0.8,
+                         1.0, 50.0);
+Material surfaceMaterial(0.0, 0.5, 0.0, 1.0, 0.0, 0.8, 0.0, 1.0, 1.0, 1.0, 1.0,
+                         1.0, 0.2, 0.2, 0.2, 1.0, 60.0);
+Material glutWireOjectMaterial(0.0, 0.0, 0.0, 1.0, 0.8, 0.0, 0.0, 1.0, 1.0, 1.0,
+                               1.0, 1.0, 0.2, 0.2, 0.2, 1.0, 80.0);
+Material mugMaterial(0.0, 0.0, 0.0, 1.0, 0.4, 0.5, 0.8, 1.0, 1.0, 1.0, 1.0, 1.0,
+                     0.8, 0.4, 0.7, 1.0, 200.0);
+Material blueMaterial(0.0, 0.0, 0.8, 1.0, 0.0, 0.0, 0.8, 1.0, 1.0, 1.0, 1.0,
+                      1.0, 0.0, 0.0, 0.8, 1.0, 300.0);
+Material greenMaterial(0.2, 0.2, 0.2, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0,
+                       1.0, 0.0, 0.0, 0.5, 1.0, 80.0);
+Light light01(0.2, 0.2, 0.2, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+              1.0, 1.0, 0.0, GL_LIGHT0);
+Light light02(0.2, 0.2, 0.2, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+              1.0, 1.0, 0.0, GL_LIGHT0);
+Light light03(0.2, 0.2, 0.2, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+              1.0, 1.0, 0.0, GL_LIGHT0);
+Light light11(0.2, 0.2, 0.2, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+             0.0, 0.0, 0.0, GL_LIGHT1);
+Light light12(0.2, 0.2, 0.2, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+             0.0, 0.0, 0.0, GL_LIGHT1);
+Light light13(0.2, 0.2, 0.2, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+             0.0, 0.0, 0.0, GL_LIGHT1);
+Light light21(0.2, 0.2, 0.4, 1.0, 0.0, 0.0, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0,
+             0.0, 1.0, 1.0, GL_LIGHT2);
+Light light22(0.2, 0.2, 0.4, 1.0, 0.0, 1.0, 0.5, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0,
+             0.0, 1.0, 1.0, GL_LIGHT2);
+Light light23(0.2, 0.2, 0.4, 1.0, 0.0, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0,
+             0.0, 1.0, 1.0, GL_LIGHT2);
+Light light31(0.0, 0.3, 0.0, 1.0, 0.5, 0.5, 0.8, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0,
+             1.0, 0.0, 0.0, GL_LIGHT3);
+Light light32(0.0, 0.3, 0.0, 1.0, 0.5, 0.8, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0,
+             1.0, 0.0, 0.0, GL_LIGHT3);
+Light light33(0.0, 0.3, 0.0, 1.0, 0.8, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0,
+             1.0, 0.0, 0.0, GL_LIGHT3);
+
+float theta = 10.0;
+float dist = 5.0;
+int row = 3, col = 3, layers = 3;
+Camera camera;
+Mesh mug, liberty, surfaceOfRevolution;
+
+GLfloat ex = 100.0;
+GLfloat ey = 100.0;
+GLfloat ez = 100.0;
+GLfloat lx = 0.0;
+GLfloat ly = 0.0;
+GLfloat lz = 0.0;
+GLfloat ux = 0.0;
+GLfloat uy = 1.0;
+GLfloat uz = 0.0;
+Point eye(ex, ey, ez);
+Point look(lx, ly, lz);
+Vector up(ux, uy, uz);
+GLfloat bg_r = 1.0;
+GLfloat bg_g = 1.0;
+GLfloat bg_b = 1.0;
+GLfloat bg_a = 1.0;
 
 void drawBox()
 {
@@ -138,6 +162,7 @@ void drawBox()
 
 void drawGlutObjects()
 {
+    glutWireOjectMaterial.active();
     glPushMatrix();
     glTranslated(20.0, 0.0, 0.0);
     glutWireSphere(10.0, 20, 20);
@@ -161,9 +186,10 @@ void drawGlutObjects()
     glutWireOctahedron();
     glPopMatrix();
 
+    glShadeModel(GL_SMOOTH);
     glPushMatrix();
     glTranslated(40.0, 20.0, 0.0);
-    glutWireTorus(2.0, 5.0, 20, 20);
+    glutSolidTorus(2.0, 5.0, 20, 20);
     glPopMatrix();
 
     glPushMatrix();
@@ -177,9 +203,10 @@ void drawGlutObjects()
     glutWireCube(10.0);
     glPopMatrix();
 
+    glShadeModel(GL_FLAT);
     glPushMatrix();
     glTranslated(0.0, 20.0, 20.0);
-    glutWireCone(5.0, 10.0, 20, 20);
+    glutSolidCone(5.0, 10.0, 20, 20);
     glPopMatrix();
 
     glPushMatrix();
@@ -190,19 +217,13 @@ void drawGlutObjects()
 
 void drawWireframeObjects()
 {
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, lib_mat_ambient);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, lib_mat_diffuse);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, lib_mat_specular);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, lib_mat_emission);
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, lib_mat_shininess);
-    // glShadeModel(GL_SMOOTH);
-    GLfloat light1_pos[] = {1.0, 1.0, 0.0, 0.0};
-    glLightfv(GL_LIGHT1, GL_AMBIENT, lib_mat_ambient);
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, lib_mat_diffuse);
-    glLightfv(GL_LIGHT1, GL_SPECULAR, lib_mat_specular);
-    glLightfv(GL_LIGHT1, GL_POSITION, light1_pos);
-    glEnable(GL_LIGHT1);
+    light01.on();
+    light11.on();
+    light21.on();
+    light31.on();
 
+    libertyMaterial.active();
+    glShadeModel(GL_SMOOTH);
     for (int i = 0; i < row; ++i) {
         for (int j = 0; j < col; ++j) {
             for (int k = 0; k < layers; ++k) {
@@ -210,25 +231,19 @@ void drawWireframeObjects()
                 glTranslated(i * 90.0 - 50.0, j * 90.0 - 50., k * 90.0 - 50.);
                 glScaled(50.0, 50.0, 50.0);
                 glRotated(10 * (i + j + k), i % 3 == 0, j % 3 == 0, k % 3 == 0);
-                liberty.draw(1);
+                liberty.draw(0);
                 glPopMatrix();
             }
         }
     }
 
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_emission);
-    // glShadeModel(GL_SMOOTH);
-
+    mugMaterial.active();
     for (int i = 0; i < row; ++i) {
         for (int j = 0; j < col; ++j) {
             for (int k = 0; k < layers; ++k) {
                 glPushMatrix();
-                glTranslated(i * -160.0, j * -160.0, k * -160.0);
-                glScaled(10.0, 10.0, 10.0);
+                glTranslated(i * -300.0, j * -300.0, k * -300.0);
+                glScaled(30.0, 30.0, 30.0);
                 glRotated(10 * (i + j + k), i % 3 == 0, j % 3 == 0, k % 3 == 0);
                 mug.draw(1);
                 glPopMatrix();
@@ -236,11 +251,18 @@ void drawWireframeObjects()
         }
     }
 
+    surfaceMaterial.active();
+    glShadeModel(GL_FLAT);
     glPushMatrix();
     glTranslated(0.0, 20.0, 40.0);
     glScaled(5.0, 5.0, 5.0);
-    surfaceOfRevolution.draw(1);
+    surfaceOfRevolution.draw(0);
     glPopMatrix();
+
+    light03.on();
+    light13.on();
+    light23.on();
+    light33.on();
 }
 
 void initCamera()
@@ -263,20 +285,17 @@ void init()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(bg_r, bg_g, bg_b, bg_a);
+
     // Set up camera using Camera class
     glViewport(0, 0, WIDTH, HEIGHT);
     camera.setShape(90.0, (GLfloat)WIDTH / HEIGHT, 1.0, 1000.0);
     camera.set(eye, look, up);
+
+    glEnable(GL_DEPTH_TEST);
     // Set up lights
     glEnable(GL_LIGHTING);
     // Enable a single OpenGL light.
-    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    glEnable(GL_LIGHT0);
-    // Use depth buffering for hidden surface elimination.
-    glEnable(GL_DEPTH_TEST);
+    light01.on();
 }
 
 void display()
@@ -289,7 +308,7 @@ void display()
     drawGlutObjects();
     drawBox();
 
-    saveImage();
+    if (USEFREEIMAGE) saveImage();
     glFlush();
     glutSwapBuffers();
 }

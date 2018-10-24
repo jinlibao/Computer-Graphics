@@ -1,4 +1,6 @@
 // #define X11 X11
+#include "camera.h"
+
 #if defined __APPLE__ && !defined X11
 #include <GLUT/glut.h>
 #include <OpenGL/gl.h>
@@ -12,8 +14,6 @@
 #include <math.h>
 #include <sstream>
 #include <string>
-
-#include "camera.h"
 
 // setModelViewMatrix used in the book "Computer Graphics using OpenGL"
 // Hill/Kelley page 336

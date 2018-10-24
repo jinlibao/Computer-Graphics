@@ -1,4 +1,6 @@
 // #define X11 X11
+#include "mesh.h"
+
 #if defined __APPLE__ && !defined X11
 #include <GLUT/glut.h>
 #include <OpenGL/gl.h>
@@ -8,12 +10,12 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #endif
+
+#include <cassert>
 #include <iostream>
 #include <math.h>
 #include <sstream>
 #include <string>
-
-#include "mesh.h"
 
 using namespace std;
 
@@ -150,9 +152,9 @@ int Mesh::readObj(const char *fileName, const int nVerts = 3)
 //
 // double Mesh::Z(double u, double v) { return u * cos(v); }
 
-double Mesh::X(double u, double v) { return cos(u / 4) * cos(v); }
+double Mesh::X(double u, double v) { return cos(2 * u) * cos(v); }
 double Mesh::Y(double u, double v) { return u; }
-double Mesh::Z(double u, double v) { return cos(u / 4) * sin(v); }
+double Mesh::Z(double u, double v) { return cos(2 * u) * sin(v); }
 double Mesh::nx(double u, double v) { return ((-1 * cos(u)) * X(u, v)); }
 double Mesh::ny(double u, double v) { return ((-1 * cos(u)) * Y(u, v)); }
 double Mesh::nz(double u, double v) { return ((-1 * cos(u)) * Z(u, v)); }
@@ -227,12 +229,14 @@ void Mesh::draw(int option = 0)
 {
     for (int f = 0; f < numFaces; f++) { // draw each face
         if (option == 0)
-            glBegin(GL_POLYGON);
+            glBegin(GL_QUADS);
         else
             glBegin(GL_LINES);
+        // int in = face[f].vert[0].normIndex; // index of this normal
+        // glNormal3f(normal[in].x, normal[in].y, normal[in].z);
         for (int v = 0; v < face[f].nVerts; v++) { // for each one..
             int in = face[f].vert[v].normIndex;    // index of this normal
-            int iv = face[f].vert[v].vertIndex;    // index of this vertex
+            int iv = face[f].vert[v].vertIndex; // index of this vertex
             glNormal3f(normal[in].x, normal[in].y, normal[in].z);
             glVertex3f(pt[iv].x, pt[iv].y, pt[iv].z);
         }

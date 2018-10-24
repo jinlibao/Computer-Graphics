@@ -5,7 +5,6 @@
 #include <math.h>
 #include <sstream>
 #include <string>
-#define X11 X11
 
 class Point;
 class Vector;
