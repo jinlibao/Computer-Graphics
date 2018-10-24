@@ -145,26 +145,6 @@ void Camera::yaw(float theta)
     setModelViewMatrix();
 }
 
-void Camera::moveAlongN(float dist)
-{
-    eye.set(eye + n * dist);
-    look.set(look + n * dist);
-    setModelViewMatrix();
-}
-
-void Camera::moveAlongV(float dist)
-{
-    eye.set(eye + v * dist);
-    look.set(look + v * dist);
-    setModelViewMatrix();
-}
-
-void Camera::moveAlongU(float dist)
-{
-    eye.set(eye + u * dist);
-    look.set(look + u * dist);
-    setModelViewMatrix();
-}
 // rotate camera around a fixed point such that the camera
 // is always looking at that point (0, 0, 0);
 void Camera::FocusedPitch(float theta)
