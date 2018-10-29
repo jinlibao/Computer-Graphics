@@ -34,7 +34,7 @@ GLint BitsPerPixel = 32;
 int frameNumber = 1;
 
 #ifdef USEFREEIMAGE
-#undef USEFREEIMAGE1
+#undef USEFREEIMAGE
 #define USEFREEIMAGE 1
 
 #include <FreeImage.h>

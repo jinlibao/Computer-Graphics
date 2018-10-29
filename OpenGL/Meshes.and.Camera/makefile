@@ -37,4 +37,4 @@ clean:
 	$(RM) $(NAME:=.dSYM) $(NAME:=.o)
 
 distclean: clean
-	$(RM) $(ALLPROGS)
+	$(RM) $(ALLPROGS) ./output/*png
