@@ -11,7 +11,7 @@
 #include "camera.h"
 #include "color.h"
 #include "matrix.h"
-#include "sphere.h"
+#include "object.h"
 #include <algorithm>
 #include <cfloat>
 #include <vector>
@@ -124,7 +124,7 @@ public:
             pixmap[row] = pixmap[row - 1] + nCols;
     }
 
-    void RayTrace(vector<Sphere> &spheres)
+    void RayTrace(vector<Object> &objects)
     {
 
         Color hitColor;
@@ -137,39 +137,78 @@ public:
                 Vector dir = n * (-N) + u * (W * (2.0 * c / nCols - 1)) +
                              v * (H * (2.0 * r / nRows - 1));
                 ray.dir.set(dir);
-                for (auto &s : spheres) {
+                for (auto &o : objects) {
                     // calculate the inverse of the ray
-                    inverseRay.setDir(s.inverse_transform_matrix * ray.dir);
-                    inverseRay.setStart(s.inverse_transform_matrix * ray.start);
-                    // determine whether there are intersections with objects
-                    float dirLength = inverseRay.dir.magnitude();
-                    float A = pow(dirLength, 2);
-                    float B = 2 * inverseRay.dir.dot(inverseRay.start);
-                    float C = pow(inverseRay.start.distFromOrigin(), 2) - 1;
-                    float delta = pow(B, 2) - 4 * A * C;
+                    inverseRay.setDir(o.inverse_transform_matrix * ray.dir);
+                    inverseRay.setStart(o.inverse_transform_matrix * ray.start);
+                    if (o.type == "sphere") {
+                        // determine whether there are intersections with
+                        // objects
+                        float dirLength = inverseRay.dir.magnitude();
+                        float A = pow(dirLength, 2);
+                        float B = 2 * inverseRay.dir.dot(inverseRay.start);
+                        float C = pow(inverseRay.start.distFromOrigin(), 2) - 1;
+                        float delta = pow(B, 2) - 4 * A * C;
 
-                    // if there is no intersection, select background color
-                    if (delta < 0) {
-                        if (t_hit == FLT_MAX) hitColor.set(backgroundColor);
-                    }
-                    // if there is exact one intersection
-                    else if (delta < FLT_MIN) {
-                        float t = -B / (2 * A);
-                        if (t < t_hit) {
-                            t_hit = t;
-                            hitColor.set(s.color);
+                        // if there is no intersection, select background color
+                        if (delta < 0) {
+                            if (t_hit == FLT_MAX) hitColor.set(backgroundColor);
+                        }
+                        // if there is exact one intersection
+                        else if (delta < FLT_MIN) {
+                            float t = -B / (2 * A);
+                            if (t < t_hit) {
+                                t_hit = t;
+                                hitColor.set(o.color);
+                            }
+                        }
+                        // if there are intersections, select the smaller one
+                        else {
+                            float t1 = (-B + sqrt(delta)) / (2 * A);
+                            float t2 = (-B - sqrt(delta)) / (2 * A);
+                            t1 = t1 >= 0 ? t1 : FLT_MAX;
+                            t2 = t2 >= 0 ? t2 : FLT_MAX;
+                            t1 = min(t1, t2);
+                            if (t1 < t_hit) {
+                                t_hit = t1;
+                                hitColor.set(o.color);
+                            }
                         }
                     }
-                    // if there are intersections, select the smaller one
-                    else {
-                        float t1 = (-B + sqrt(delta)) / (2 * A);
-                        float t2 = (-B - sqrt(delta)) / (2 * A);
-                        t1 = t1 >= 0 ? t1 : FLT_MAX;
-                        t2 = t2 >= 0 ? t2 : FLT_MAX;
-                        t1 = min(t1, t2);
-                        if (t1 <= t_hit) {
-                            t_hit = t1;
-                            hitColor.set(s.color);
+                    // when the object is a cylinder, very similar to the case of sphere
+                    else if (o.type == "cylinder") {
+                        Vector dir2d(inverseRay.dir.x, 0.0, inverseRay.dir.z);
+                        Point center2d(inverseRay.start.x, 0.0, inverseRay.start.z);
+                        float A = pow(dir2d.magnitude(), 2);
+                        float B = dir2d.dot(center2d) * 2;
+                        float C = pow(center2d.distFromOrigin(), 2) - 1;
+                        float delta = pow(B, 2) - 4 * A * C;
+                        if (delta < 0) {
+                            if (t_hit == FLT_MAX) hitColor.set(backgroundColor);
+                        }
+                        else if (delta < FLT_MIN) {
+                            float t = -B / (2 * A);
+                            if (t < t_hit) {
+                                float yy = inverseRay.start.y + inverseRay.dir.y * t;
+                                if (yy >= 0 && yy <= 1.0) {
+                                    t_hit = t;
+                                    hitColor.set(o.color);
+                                }
+                            }
+                        }
+                        else {
+                            float t1 = (-B + sqrt(delta)) / (2 * A);
+                            float t2 = (-B - sqrt(delta)) / (2 * A);
+                            t1 = t1 > 0 ? t1 : FLT_MAX;
+                            t2 = t2 > 0 ? t2 : FLT_MAX;
+                            t1 = min(t1, t2);
+                            if (t1 < t_hit) {
+                                float yy = inverseRay.start.y + inverseRay.dir.y * t1;
+                                if (yy >= 0 && yy <= 1.0) {
+                                    t_hit = t1;
+                                    hitColor.set(o.color);
+                                }
+                            }
                         }
                     }
                 }

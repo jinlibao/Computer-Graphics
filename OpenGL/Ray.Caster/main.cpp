@@ -10,7 +10,7 @@
 #include "matrix.h"
 #include "mesh.h"
 #include "ray.h"
-#include "sphere.h"
+#include "object.h"
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -130,28 +130,29 @@ GLfloat rightPos = 0.25;
 GLfloat bottomPos = - 0.20;
 GLfloat topPos = 0.20;
 GLfloat nearClip = 0.2;
-GLfloat farClip = 2.0;
+GLfloat farClip = 10.0;
 Point eye(ex, ey, ez);
 Point look(lx, ly, lz);
 Vector up(ux, uy, uz);
 Vector u, v, n;
 Camera camera;
 Color backgroundColor(bg_r, bg_g, bg_b);
-int nSpheres = 3;
-int blockSize = 1;
-Sphere s1(0.125, 0.125, -0.25, -1.0, 1.0, 0.0, 0.0);
-Sphere s2(0.375, 0.5, 0.5, -1.75, 0.0, 0.0, 1.0);
-Sphere s3(0.75, -0.5, 0.0, -2.5, 0.0, 1.0, 0.0);
-Sphere s4(0.05, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0);
-vector<Sphere> spheres;
+int nObjects = 3;
+int blockSize[8] = {1, 2, 4, 5, 10, 20, 50, 100};
+int blockIndex = 0;
+Object o1("sphere", 0.125, 0.125, -0.25, -1.0, 1.0, 0.0, 0.0);
+Object o2("sphere", 0.375, 0.5, 0.5, -1.75, 0.0, 0.0, 1.0);
+Object o3("sphere", 0.75, -0.5, 0.0, -2.5, 0.0, 1.0, 0.0);
+Object o4("cylinder", 0.15, 0.5, 0.5, -0.25, -1.00, 0.0, 1.0, 1.0);
+vector<Object> objects;
 RayCast raycaster;
 
 void init()
 {
-    spheres.push_back(s1);
-    spheres.push_back(s2);
-    spheres.push_back(s3);
-    // spheres.push_back(s4);
+    objects.push_back(o1);
+    objects.push_back(o2);
+    objects.push_back(o3);
+    objects.push_back(o4);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, WIDTH, HEIGHT);
@@ -163,7 +164,7 @@ void init()
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     camera.set(eye, look, up);
-    raycaster.set(backgroundColor, WIDTH, HEIGHT, blockSize, camera);
+    raycaster.set(backgroundColor, WIDTH, HEIGHT, blockSize[blockIndex], camera);
 }
 
 void drawGlutObjects()
@@ -197,7 +198,8 @@ void display()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // glClearColor(bg_r, bg_g, bg_b, bg_a);
     // drawGlutObjects();
-    raycaster.RayTrace(spheres);
+    raycaster.set(backgroundColor, WIDTH, HEIGHT, blockSize[blockIndex], camera);
+    raycaster.RayTrace(objects);
     // printf("%d\n", glutGet(GLUT_WINDOW_HEIGHT));
 
     if (USEFREEIMAGE) saveImage();
@@ -248,6 +250,12 @@ void keyboard(unsigned char key, int x, int y)
     case 'E':
     case 'e':
         camera.roll(theta);
+        break;
+    case '-':
+        if (--blockIndex <= 0) blockIndex = 0;
+        break;
+    case '+':
+        if (++blockIndex >= 8) blockIndex = 7;
         break;
     case 27:
         exit(0);
