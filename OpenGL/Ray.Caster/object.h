@@ -1,3 +1,11 @@
+// object.h
+// Implementation for Object Class
+// Contains sphere and cylinder
+// COSC 5450 Project 3(a)
+// Libao Jin
+// ljin1@uwyo.edu
+// 10/29/2018
+
 #ifndef OBJECT_H
 #define OBJECT_H
 

@@ -1,6 +1,6 @@
 #
 # makefile
-# Libao Jin, 2018-10-08 15:31
+# Libao Jin, 2018-10-28 15:31
 #
 
 # CC = g++  # g++ (Homebrew GCC 8.2.0) 8.2.0
@@ -14,10 +14,10 @@ CC = clang++
 
 # use freeimage
 # CFLAGS = --std=c++17 -lstdc++ -lfreeimage -framework GLUT -framework OpenGL -Wno-deprecated -D USEFREEIMAGE=1
-CFLAGS = -g --std=c++17 -lstdc++ -lfreeimage -lglut -lGLU -lGL -I/opt/X11/include -L/opt/X11/lib -Wno-deprecated -DUSEFREEIMAGE=1 -D X11=1
+# CFLAGS = -g --std=c++17 -lstdc++ -lfreeimage -lglut -lGLU -lGL -I/opt/X11/include -L/opt/X11/lib -Wno-deprecated -DUSEFREEIMAGE=1 -D X11=1
 
 # do not use freeimage
-# CFLAGS = --std=c++17 -lstdc++ -framework GLUT -framework OpenGL -Wno-deprecated
+CFLAGS = --std=c++17 -lstdc++ -framework GLUT -framework OpenGL -Wno-deprecated
 # CFLAGS = --std=c++17 -lstdc++ -lglut -lGLU -lGL -I/opt/X11/include -L/opt/X11/lib -Wno-deprecated -D X11=1
 
 RM = rm -rf
@@ -30,7 +30,7 @@ ALLPROGS = $(NAME)
 
 all: distclean main
 
-main: main.cpp camera.cpp matrix.cpp mesh.cpp
+main: main.cpp camera.cpp matrix.cpp
 	$(CC) $(CFLAGS) -o $@ $?
 
 clean:

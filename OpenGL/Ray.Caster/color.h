@@ -1,3 +1,9 @@
+// color.h
+// Implementation for Coloc Class
+// COSC 5450 Project 3(a)
+// Libao Jin
+// 10/29/2018
+
 #ifndef COLOR_H
 #define COLOR_H
 
