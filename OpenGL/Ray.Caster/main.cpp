@@ -5,6 +5,7 @@
 
 #include "camera.h"
 #include "color.h"
+#include "light.h"
 #include "matrix.h"
 #include "object.h"
 #include "ray.h"
@@ -67,6 +68,14 @@ void saveImage()
 void saveImage(){};
 #endif
 
+// set parameters for lights
+Light globalAmbient();
+globalAmbient.setGlobalAmbient(0.25, 0.05, 0.05, 1);
+Light pointLight(0.65, 0.65, 0.65, 1, 0, 0, 0, 1, 0, 0, 0, 1, 200, 100, 50, 1, GL_LIGHT0);
+Light spotLight(0, 0, 0, 1, 0, 0, 0, 1, 0.4, 0.4, 0.7, 1, -1, 0, 1, 1, GL_LIGHT1);
+spotLight.setSpotlight(30, 0.5, 0, 0, -1, 0);
+Light yellowLight(0, 0, 0, 1, 0.8, 0.8, 0.6, 1, 0, 0, 0, 1, -400, 692, 0, 0, GL_LIGHT2);
+
 float theta = 10.0; // for roll, yaw, pitch
 float dist = 0.1;   // for sliding/moving along u, v, n
 GLfloat bg_r = 0.5; // background color red
@@ -107,6 +116,12 @@ RayCast raycaster;
 
 void init()
 {
+    // set up lights
+    glEnable(GL_LIGHTING);
+    pointLight.on();
+    spotLight.on();
+    yellowLight.on();
+
     // add objects to the object list
     objects.push_back(o1);
     objects.push_back(o2);
