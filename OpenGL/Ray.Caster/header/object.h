@@ -11,6 +11,7 @@
 
 #include "color.h"
 #include "matrix.h"
+#include <string>
 
 using namespace std;
 

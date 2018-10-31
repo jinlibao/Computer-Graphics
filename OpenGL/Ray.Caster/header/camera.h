@@ -1,7 +1,7 @@
-// #define X11 X11
-#include "camera.h"
-#include "ray.h"
+#ifndef CAMERA_H
+#define CAMERA_H
 
+#include "matrix.h"
 #if defined __APPLE__ && !defined X11
 #include <GLUT/glut.h>
 #include <OpenGL/gl.h>
@@ -15,6 +15,35 @@
 #include <math.h>
 #include <sstream>
 #include <string>
+
+class Camera {
+public:
+    Point eye, look;
+    Vector u, v, n, up;
+    float H, W, viewAngle, aspect, nearDist, farDist;
+    void setModelViewMatrix();
+
+    Camera() {}
+    void set(float, float, float, float, float, float, float, float, float);
+    void set(Point &eye, Point &look, Vector &up);
+    void slide(float delU, float delV, float delN);
+    void setShape(float vAng, float asp, float nearD, float farD);
+    void roll(float theta);
+    void pitch(float theta);
+    void yaw(float theta);
+    void FocusedPitch(float theta);
+    void FocusedYaw(float theta);
+    void CenterFocus();
+    void raytrace(int blockSize);
+    Vector GetC(int, int, int, int);
+    Point GetEye();
+    Point GetLook();
+    Vector GetN();
+    Vector GetV();
+    Vector GetU();
+    float GetAspect();
+};
+
 
 // setModelViewMatrix used in the book "Computer Graphics using OpenGL"
 // Hill/Kelley page 336
@@ -183,3 +212,5 @@ Vector Camera::GetV() { return v; }
 Vector Camera::GetN() { return n; }
 Vector Camera::GetU() { return u; }
 float Camera::GetAspect() { return aspect; }
+
+#endif
