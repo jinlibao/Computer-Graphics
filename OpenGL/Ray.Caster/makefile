@@ -22,7 +22,7 @@ CFLAGS = --std=c++17 -lstdc++ -framework GLUT -framework OpenGL -Wno-deprecated
 
 RM = rm -rf
 
-NAME = main matrix mesh camera
+NAME = main
 
 .DEFAULT_GOAL := all
 
@@ -30,7 +30,7 @@ ALLPROGS = $(NAME)
 
 all: distclean main
 
-main: main.cpp camera.cpp matrix.cpp
+main: main.cpp
 	$(CC) $(CFLAGS) -o $@ $?
 
 clean:

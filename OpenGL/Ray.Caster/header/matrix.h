@@ -1,4 +1,96 @@
-#include "matrix.h"
+#ifndef MATRIX_H
+#define MATRIX_H
+
+#include <cmath>
+
+class Point;
+class Vector;
+class Matrix;
+
+float const e = exp(1.0);
+float const pi = 4 * atan(1.0f);
+
+// 3D points
+class Point {
+public:
+    // float p[4];
+    float x, y, z, h;
+    Point();
+    Point(const Point &);
+    Point(float, float, float);
+    Point(float, float, float, float);
+    void set(float, float, float);
+    void set(float, float, float, float);
+    void set(const Point &);
+    float distFromOrigin();
+    const Vector &operator-(const Point &) const;
+    const Point &operator+(const Vector &) const;
+    const Point &operator-(const Vector &) const;
+    void operator=(const Point &);
+};
+
+// 3D vectors
+class Vector {
+public:
+    // float v[4];
+    float x, y, z, h;
+    Vector();
+    Vector(const Vector &);
+    Vector(float, float, float);
+    Vector(float, float, float, float);
+    void set(const Vector &);
+    void set(float, float, float);
+    void set(float, float, float, float);
+    float dot(Vector &);
+    float dot(Point &);
+    Vector cross(Vector &);
+    Vector cross(Point &);
+    Vector newell(Point[3]);
+    void normalize();
+    float magnitude();
+    const Vector &operator+(const Vector &) const;
+    const Vector &operator-(const Vector &) const;
+    const Vector &operator*(float)const;
+    void operator=(const Vector &);
+};
+
+// Matrices
+class Matrix {
+public:
+    /*
+       matrix array representation:
+       [0 4 8  12]
+       [1 5 9  13]
+       [2 6 10 14]
+       [3 7 11 15]
+       */
+    float m[16];
+    Matrix();
+    float Determinant();
+    const Matrix &Inverse();
+    const Point &operator*(const Point &)const; // 3DPoint = matrix * 3Dpoint;
+    const Vector &
+    operator*(const Vector &)const; // 3Dvector = matrix * 3Dvector;
+    const Matrix &operator*(const Matrix &)const; // matrix = matrix * matrix;
+    const Matrix &operator*(float)const;          // matrix = matrix * float;
+    void operator=(const Matrix &);               // set matrix from matrix
+    void operator=(float *);                      // set matrix from array
+    void SetToIdentity(); // set matrix to identity matrix
+};
+
+// Transformations
+class Transform {
+public:
+    Matrix matrix;
+    void Translate(float, float);            // 2D translate
+    void Translate(float, float, float);     // 3Dtranslate
+    void Rotate(float);                      // rotate around z axis
+    void Rotate(float, float, float, float); // 3D rotate
+    void Scale(float, float);                // 2D scale
+    void Scale(float, float, float);         // 3D scale
+    void Shear(float, float);                // 2D Shear
+    void Shear(float, float, float);         // 3D shear
+};
 
 Point::Point(float i, float j, float k)
 {
@@ -6,6 +98,14 @@ Point::Point(float i, float j, float k)
     y = j;
     z = k;
     h = 1.0;
+}
+
+Point::Point(float i, float j, float k, float l)
+{
+    x = i;
+    y = j;
+    z = k;
+    h = l;
 }
 
 Point::Point()
@@ -30,6 +130,14 @@ void Point::set(float i, float j, float k)
     y = j;
     z = k;
     h = 1.0;
+}
+
+void Point::set(float i, float j, float k, float l)
+{
+    x = i;
+    y = j;
+    z = k;
+    h = l;
 }
 
 void Point::set(const Point &p) { set(p.x, p.y, p.z); }
@@ -57,12 +165,29 @@ const Point &Point::operator-(const Vector &v) const
     return *r;
 }
 
+
+void Point::operator=(const Point &p)
+{
+    x = p.x;
+    y = p.y;
+    z = p.z;
+    h = p.h;
+}
+
 Vector::Vector(float i, float j, float k)
 {
     x = i;
     y = j;
     z = k;
     h = 0.0;
+}
+
+Vector::Vector(float i, float j, float k, float l)
+{
+    x = i;
+    y = j;
+    z = k;
+    h = l;
 }
 
 Vector::Vector() { x = y = z = h = 0.0; }
@@ -81,6 +206,14 @@ void Vector::set(float i, float j, float k)
     y = j;
     z = k;
     h = 0.0;
+}
+
+void Vector::set(float i, float j, float k, float l)
+{
+    x = i;
+    y = j;
+    z = k;
+    h = l;
 }
 
 void Vector::set(const Vector &v) { this->set(v.x, v.y, v.z); }
@@ -153,6 +286,14 @@ const Vector &Vector::operator*(float s) const
 {
     Vector *r = new Vector(x * s, y * s, z * s);
     return *r;
+}
+
+void Vector::operator=(const Vector &v)
+{
+    x = v.x;
+    y = v.y;
+    z = v.z;
+    h = v.h;
 }
 
 Matrix::Matrix() { SetToIdentity(); }
@@ -465,3 +606,5 @@ float Matrix::Determinant()
            m[8] * m[1] * m[6] * m[15] - m[0] * m[9] * m[6] * m[15] -
            m[4] * m[1] * m[10] * m[15] + m[0] * m[5] * m[10] * m[15];
 }
+
+#endif

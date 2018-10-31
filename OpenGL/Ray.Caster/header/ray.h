@@ -1,6 +1,6 @@
 // ray.h
 // Implementation for Ray and RayCast Class
-// COSC 5450 Project 3(a)
+// COSC 5450 Project 3a
 // Libao Jin
 // ljin1@uwyo.edu
 // 10/29/2018
@@ -8,11 +8,8 @@
 #ifndef RAY_H
 #define RAY_H
 
-#include "camera.h"
-#include "color.h"
-#include "matrix.h"
 #include "object.h"
-#include <algorithm>
+#include "light.h"
 #include <cfloat>
 #include <vector>
 
@@ -80,32 +77,13 @@ public:
     RGBpixel **pixmap;
     float N, W, H;
     Vector u, v, n;
+    Point eye, look;
+    Vector up;
 
     RayCast(){};
 
     void set(Color &backgroundColor, int nCols, int nRows, int blockSize,
-             Camera &camera)
-    {
-        this->backgroundColor.set(backgroundColor);
-        this->nRows = nRows;
-        this->nCols = nCols;
-        this->blockSize = blockSize;
-        this->N = camera.nearDist;
-        this->W = camera.W;
-        this->H = camera.H;
-        this->u.set(camera.u);
-        this->v.set(camera.v);
-        this->n.set(camera.n);
-        this->ray.start.set(camera.eye);
-        pixmap = new RGBpixel *[nRows];
-        pixmap[0] = new RGBpixel[nRows * nCols];
-        for (int row = 1; row < nRows; row++)
-            pixmap[row] = pixmap[row - 1] + nCols;
-    }
-
-    void set(Color &backgroundColor, int nCols, int nRows, int blockSize,
-             float N, float W, float H, Vector &u, Vector &v, Vector &n,
-             Point &eye)
+             float N, float W, float H, Point &eye, Point &look, Vector &up)
     {
         this->backgroundColor.set(backgroundColor);
         this->nRows = nRows;
@@ -114,17 +92,24 @@ public:
         this->N = N;
         this->W = W;
         this->H = H;
-        this->u.set(u);
-        this->v.set(v);
-        this->n.set(n);
-        this->ray.start.set(eye);
+        this->eye = eye;
+        this->look = look;
+        this->up = up;
+        // calculate v, n, u vectors for later use
+        n = eye - look;
+        u = up.cross(n);
+        v = n.cross(u);
+        n.normalize();
+        u.normalize();
+        v.normalize();
         pixmap = new RGBpixel *[nRows];
         pixmap[0] = new RGBpixel[nRows * nCols];
         for (int row = 1; row < nRows; row++)
             pixmap[row] = pixmap[row - 1] + nCols;
     }
 
-    void RayTrace(vector<Object> &objects)
+    void cast(vector<Object> &objects, vector<Light> &lights,
+                  bool isPerspectiveProjection = true)
     {
 
         Color hitColor;
@@ -134,9 +119,18 @@ public:
                 // reset t_hit to be inf (FLT_MAX)
                 t_hit = FLT_MAX;
                 // calculate the direction of the ray
-                Vector dir = n * (-N) + u * (W * (2.0 * c / nCols - 1)) +
-                             v * (H * (2.0 * r / nRows - 1));
-                ray.dir.set(dir);
+                // perspective projection
+                if (isPerspectiveProjection) {
+                    ray.dir = n * (-N) + u * (W * (2.0 * c / nCols - 1)) +
+                              v * (H * (2.0 * r / nRows - 1));
+                    ray.start = eye;
+                }
+                // orthographic projection
+                else {
+                    ray.dir = n * (-N);
+                    ray.start.set(W * (2.0 * c / nCols - 1),
+                                  H * (2.0 * r / nRows - 1), ray.start.z);
+                }
                 for (auto &o : objects) {
                     // calculate the inverse of the ray
                     inverseRay.setDir(o.inverse_transform_matrix * ray.dir);
@@ -159,7 +153,7 @@ public:
                             float t = -B / (2 * A);
                             if (t < t_hit) {
                                 t_hit = t;
-                                hitColor.set(o.color);
+                                hitColor.set(trace(lights, ray, o, t_hit));
                             }
                         }
                         // if there are intersections, select the smaller one
@@ -171,14 +165,16 @@ public:
                             t1 = min(t1, t2);
                             if (t1 < t_hit) {
                                 t_hit = t1;
-                                hitColor.set(o.color);
+                                hitColor.set(trace(lights, ray, o, t_hit));
                             }
                         }
                     }
-                    // when the object is a cylinder, very similar to the case of sphere
+                    // when the object is a cylinder, very similar to the case
+                    // of sphere
                     else if (o.type == "cylinder") {
                         Vector dir2d(inverseRay.dir.x, 0.0, inverseRay.dir.z);
-                        Point center2d(inverseRay.start.x, 0.0, inverseRay.start.z);
+                        Point center2d(inverseRay.start.x, 0.0,
+                                       inverseRay.start.z);
                         float A = pow(dir2d.magnitude(), 2);
                         float B = dir2d.dot(center2d) * 2;
                         float C = pow(center2d.distFromOrigin(), 2) - 1;
@@ -189,10 +185,11 @@ public:
                         else if (delta < FLT_MIN) {
                             float t = -B / (2 * A);
                             if (t < t_hit) {
-                                float yy = inverseRay.start.y + inverseRay.dir.y * t;
+                                float yy =
+                                    inverseRay.start.y + inverseRay.dir.y * t;
                                 if (yy >= 0 && yy <= 1.0) {
                                     t_hit = t;
-                                    hitColor.set(o.color);
+                                    hitColor.set(trace(lights, ray, o, t_hit));
                                 }
                             }
                         }
@@ -203,10 +200,11 @@ public:
                             t2 = t2 > 0 ? t2 : FLT_MAX;
                             t1 = min(t1, t2);
                             if (t1 < t_hit) {
-                                float yy = inverseRay.start.y + inverseRay.dir.y * t1;
+                                float yy =
+                                    inverseRay.start.y + inverseRay.dir.y * t1;
                                 if (yy >= 0 && yy <= 1.0) {
                                     t_hit = t1;
-                                    hitColor.set(o.color);
+                                    hitColor.set(trace(lights, ray, o, t_hit));
                                 }
                             }
                         }
@@ -216,9 +214,12 @@ public:
                 // place the color in the rc-th pixel
                 for (int i = 0; i < blockSize; ++i) {
                     for (int j = 0; j < blockSize; ++j) {
-                        pixmap[r + i][c + j].r = (unsigned char)(hitColor.r * 255);
-                        pixmap[r + i][c + j].g = (unsigned char)(hitColor.g * 255);
-                        pixmap[r + i][c + j].b = (unsigned char)(hitColor.b * 255);
+                        pixmap[r + i][c + j].r =
+                            (unsigned char)(hitColor.r * 255);
+                        pixmap[r + i][c + j].g =
+                            (unsigned char)(hitColor.g * 255);
+                        pixmap[r + i][c + j].b =
+                            (unsigned char)(hitColor.b * 255);
                     }
                 }
 
@@ -235,8 +236,19 @@ public:
 
         // use pixmap and glDrawPixels to set the color of each rc-th pixel to
         // be the color of the object that was hit or the background color
+        // glRasterPos2f(-0.25, -0.2);
         glRasterPos2f(-0.25, -0.2);
         glDrawPixels(nCols, nRows, GL_RGB, GL_UNSIGNED_BYTE, pixmap[0]);
+    }
+
+    Color trace(vector<Light> &lights, Ray &ray, Object &o, float t_hit)
+    {
+        Color total(o.material.emission);
+        for (auto & l: lights)
+        {
+
+        }
+        return total;
     }
 };
 

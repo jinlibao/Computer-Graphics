@@ -9,8 +9,9 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
-#include "color.h"
+#include "material.h"
 #include "matrix.h"
+#include <string>
 
 using namespace std;
 
@@ -20,7 +21,7 @@ public:
     float radius;
     float length;
     Point center;
-    Color color;
+    Material material;
     Transform transform_matrix;
     Matrix inverse_transform_matrix;
 
@@ -43,27 +44,27 @@ public:
         type = o.type;
         radius = o.radius;
         center.set(o.center);
-        color.set(o.color);
+        material.set(o.material);
         transform_matrix.matrix = o.transform_matrix.matrix;
         inverse_transform_matrix = o.inverse_transform_matrix;
     }
 
-    Object(string type, float radius, Point &center, Color &color)
+    Object(string type, float radius, Point &center, Material &material)
     {
         this->type = type;
         this->radius = radius;
         this->center.set(center);
-        this->color.set(color);
+        this->material.set(material);
         setTransform(this->radius, this->center);
     }
 
-    Object(string type, float radius, float length, Point &center, Color &color)
+    Object(string type, float radius, float length, Point &center, Material &material)
     {
         this->type = type;
         this->radius = radius;
         this->length = length;
         this->center.set(center);
-        this->color.set(color);
+        this->material.set(material);
         setTransform(this->radius, this->length, this->center);
     }
 
@@ -72,7 +73,7 @@ public:
         this->type = type;
         this->radius = radius;
         center.set(x, y, z);
-        color.set(r, g, b);
+        material.set(r, g, b);
         setTransform(radius, center);
     }
 
@@ -82,26 +83,26 @@ public:
         this->radius = radius;
         this->length = length;
         center.set(x, y, z);
-        color.set(r, g, b);
+        material.set(r, g, b);
         setTransform(radius, length, center);
     }
 
-    void set(string type, float radius, Point &center, Color &color)
+    void set(string type, float radius, Point &center, Material &material)
     {
         this->type = type;
         this->radius = radius;
         this->center.set(center);
-        this->color.set(color);
+        this->material.set(material);
         setTransform(this->radius, this->center);
     }
 
-    void set(string type, float radius, float length, Point &center, Color &color)
+    void set(string type, float radius, float length, Point &center, Material &material)
     {
         this->type = type;
         this->radius = radius;
         this->length = length;
         this->center.set(center);
-        this->color.set(color);
+        this->material.set(material);
         setTransform(this->radius, this->length, this->center);
     }
 
@@ -110,7 +111,7 @@ public:
         this->type = type;
         this->radius = radius;
         center.set(x, y, z);
-        color.set(r, g, b);
+        material.set(r, g, b);
         setTransform(radius, center);
     }
 
@@ -120,7 +121,7 @@ public:
         this->radius = radius;
         this->length = length;
         center.set(x, y, z);
-        color.set(r, g, b);
+        material.set(r, g, b);
         setTransform(radius, length, center);
     }
 };
