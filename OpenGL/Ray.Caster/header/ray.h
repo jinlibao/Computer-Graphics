@@ -140,22 +140,20 @@ public:
                     // calculate the inverse of the ray
                     inverseRay.setDir(o.inverse_transform_matrix * ray.dir);
                     inverseRay.setStart(o.inverse_transform_matrix * ray.start);
+                    // determine whether there are intersections with objects
                     if (o.type == "sphere") {
-                        // determine whether there are intersections with
-                        // objects
                         float dirLength = inverseRay.dir.magnitude();
                         float A = pow(dirLength, 2);
                         float B = 2 * inverseRay.dir.dot(inverseRay.start);
                         float C = pow(inverseRay.start.distFromOrigin(), 2) - 1;
                         float delta = pow(B, 2) - 4 * A * C;
-
                         // if there is no intersection, select background color
                         if (delta < 0) {
                             if (t_hit == FLT_MAX) hitColor.set(backgroundColor);
                         }
                         // if there is exact one intersection
                         else if (delta < FLT_MIN) {
-                            float t = -B / (2 * A);
+                            float t = -B / (2 * A) >= 0 ? -B / (2 * A) : FLT_MAX;
                             if (t < t_hit) {
                                 t_hit = t;
                                 hitColor.set(trace(lights, ray, o, t_hit));
@@ -174,12 +172,10 @@ public:
                             }
                         }
                     }
-                    // when the object is a cylinder, very similar to the case
-                    // of sphere
+                    // when the object is a cylinder, similar to spheres
                     else if (o.type == "cylinder") {
                         Vector dir2d(inverseRay.dir.x, 0.0, inverseRay.dir.z);
-                        Point center2d(inverseRay.start.x, 0.0,
-                                       inverseRay.start.z);
+                        Point center2d(inverseRay.start.x, 0.0, inverseRay.start.z);
                         float A = pow(dir2d.magnitude(), 2);
                         float B = dir2d.dot(center2d) * 2;
                         float C = pow(center2d.distFromOrigin(), 2) - 1;
@@ -188,10 +184,9 @@ public:
                             if (t_hit == FLT_MAX) hitColor.set(backgroundColor);
                         }
                         else if (delta < FLT_MIN) {
-                            float t = -B / (2 * A);
+                            float t = -B / (2 * A) >= 0 ? -B / (2 * A) : FLT_MAX;
                             if (t < t_hit) {
-                                float yy =
-                                    inverseRay.start.y + inverseRay.dir.y * t;
+                                float yy = inverseRay.start.y + inverseRay.dir.y * t;
                                 if (yy >= 0 && yy <= 1.0) {
                                     t_hit = t;
                                     hitColor.set(trace(lights, ray, o, t_hit));
@@ -205,8 +200,7 @@ public:
                             t2 = t2 > 0 ? t2 : FLT_MAX;
                             t1 = min(t1, t2);
                             if (t1 < t_hit) {
-                                float yy =
-                                    inverseRay.start.y + inverseRay.dir.y * t1;
+                                float yy = inverseRay.start.y + inverseRay.dir.y * t1;
                                 if (yy >= 0 && yy <= 1.0) {
                                     t_hit = t1;
                                     hitColor.set(trace(lights, ray, o, t_hit));
@@ -219,12 +213,9 @@ public:
                 // place the color in the rc-th pixel
                 for (int i = 0; i < blockSize; ++i) {
                     for (int j = 0; j < blockSize; ++j) {
-                        pixmap[r + i][c + j].r =
-                            (unsigned char)(hitColor.r * 255);
-                        pixmap[r + i][c + j].g =
-                            (unsigned char)(hitColor.g * 255);
-                        pixmap[r + i][c + j].b =
-                            (unsigned char)(hitColor.b * 255);
+                        pixmap[r + i][c + j].r = (unsigned char)(hitColor.r * 255);
+                        pixmap[r + i][c + j].g = (unsigned char)(hitColor.g * 255);
+                        pixmap[r + i][c + j].b = (unsigned char)(hitColor.b * 255);
                     }
                 }
 
@@ -241,7 +232,6 @@ public:
 
         // use pixmap and glDrawPixels to set the color of each rc-th pixel to
         // be the color of the object that was hit or the background color
-        // glRasterPos2f(-0.25, -0.2);
         glRasterPos2f(-0.25, -0.2);
         glDrawPixels(nCols, nRows, GL_RGB, GL_UNSIGNED_BYTE, pixmap[0]);
     }
