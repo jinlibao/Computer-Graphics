@@ -69,6 +69,48 @@ public:
         this->b = b;
         this->a = a;
     }
+
+    const Color &operator+(const Color &c) const
+    {
+        float nr = r + c.r > 1 ? 1 : r + c.r;
+        float ng = g + c.g > 1 ? 1 : g + c.g;
+        float nb = b + c.b > 1 ? 1 : b + c.b;
+        Color *ret = new Color(nr, ng, nb);
+        return *ret;
+    }
+
+    const Color &operator*(const Color &c) const
+    {
+        float nr = r * c.r > 1 ? 1 : r * c.r;
+        float ng = g * c.g > 1 ? 1 : g * c.g;
+        float nb = b * c.b > 1 ? 1 : b * c.b;
+        Color *ret = new Color(nr, ng, nb);
+        return *ret;
+    }
+
+    const Color &operator*(float c) const
+    {
+        float nr = r * c > 1 ? 1 : r * c;
+        float ng = g * c > 1 ? 1 : g * c;
+        float nb = b * c > 1 ? 1 : b * c;
+        Color *ret = new Color(nr, ng, nb);
+        return *ret;
+    }
+    void operator=(const Color &c)
+    {
+        r = c.r;
+        g = c.g;
+        b = c.b;
+        a = c.a;
+    }
+
+    void operator+=(const Color &c)
+    {
+        r = r + c.r > 1 ? 1 : r + c.r;
+        g = g + c.g > 1 ? 1 : g + c.g;
+        b = b + c.b > 1 ? 1 : b + c.b;
+        a = c.a;
+    }
 };
 
 #endif

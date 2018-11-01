@@ -8,9 +8,10 @@
 #ifndef RAY_H
 #define RAY_H
 
-#include "object.h"
 #include "light.h"
+#include "object.h"
 #include <cfloat>
+#include <iostream>
 #include <vector>
 
 #if defined __APPLE__ && !defined X11
@@ -22,6 +23,10 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #endif
+
+#define max(a, b) (a > b ? a : b)
+#define LIGHTSON true
+// #define LIGHTSON false
 
 using namespace std;
 
@@ -109,7 +114,7 @@ public:
     }
 
     void cast(vector<Object> &objects, vector<Light> &lights,
-                  bool isPerspectiveProjection = true)
+              bool isPerspectiveProjection = true)
     {
 
         Color hitColor;
@@ -243,12 +248,100 @@ public:
 
     Color trace(vector<Light> &lights, Ray &ray, Object &o, float t_hit)
     {
-        Color total(o.material.emission);
-        for (auto & l: lights)
-        {
+        // Color total(o.material.emission);
+        Color total;
 
+        if (LIGHTSON) {
+            Point hitPoint = getHitPoint(ray.start, ray.dir, t_hit);
+            Vector V = getV(hitPoint, ray.start);
+            Vector N = getNormal(o, hitPoint);
+            for (auto &l : lights) {
+                Vector L = getL(l.position, hitPoint);
+                Vector R = getR(N, L);
+                Vector H = getH(V, L);
+                if (l.isGlobalAmbient) {
+                    total += l.ambient * o.material.ambient;
+                }
+                else {
+                    l.attenuation = getAttenuation(l, hitPoint);
+                    total += l.ambient * o.material.ambient;
+                    total += l.diffuse * o.material.diffuse * max(0, L.dot(N)) * l.attenuation;
+                    // total += l.specular * o.material.specular * pow(max(0, R.dot(V)), o.material.shininess) * l.attenuation;
+                    total += l.specular * o.material.specular * pow(max(0, H.dot(N)), o.material.shininess) * l.attenuation;
+                }
+            }
         }
         return total;
+    }
+
+    Point getHitPoint(Point start, Vector dir, float t_hit)
+    {
+        Point hitPoint;
+        hitPoint.set(start + dir * t_hit);
+        return hitPoint;
+    }
+
+    // the direction vector from the point on the surface toward each light
+    // source
+    Vector getL(Point lightPos, Point hitPoint)
+    {
+        Vector L;
+        if (lightPos.h == 0)
+            L.set(lightPos.x, lightPos.y, lightPos.z);
+        else
+            L.set(lightPos - hitPoint);
+        L.normalize();
+        return L;
+    }
+
+    Vector getNormal(Object o, Point hitPoint)
+    {
+        Vector N(hitPoint - o.center);
+        N.normalize();
+        return N;
+    }
+
+    Vector getR(Vector N, Vector L)
+    {
+        Vector R(N * (N.dot(L) * 2) - L);
+        R.normalize();
+        return R;
+    }
+
+    Vector getV(Point hitPoint, Point start)
+    {
+        Vector V(start - hitPoint);
+        V.normalize();
+        return V;
+    }
+
+    Vector getH(Vector V, Vector L)
+    {
+        V.normalize();
+        L.normalize();
+        Vector H(V + L);
+        H.normalize();
+        return H;
+    }
+
+    float getAttenuation(Light light, Point hitPoint, float c = 0.15, float l = 0.05, float q = 0.05)
+    {
+        Vector L(hitPoint - light.position);
+        Vector D(light.direction);
+        float d = L.magnitude();
+        L.normalize();
+        D.normalize();
+        float attenuation = 1.0;
+        if (light.isPointLight) {
+            attenuation = 1 / (c + l * d + q * d * d);
+            if (light.isSpotlight) {
+                if (L.dot(D) < cos(light.spot_cutoff * pi / 180))
+                    attenuation *= 0;
+                else
+                    attenuation *= pow(max(L.dot(D), 0), light.spot_exponent);
+            }
+        }
+        return attenuation;
     }
 };
 

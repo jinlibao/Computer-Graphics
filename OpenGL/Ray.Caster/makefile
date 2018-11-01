@@ -17,8 +17,8 @@ CC = clang++
 # CFLAGS = -g --std=c++17 -lstdc++ -lfreeimage -lglut -lGLU -lGL -I/opt/X11/include -L/opt/X11/lib -Wno-deprecated -DUSEFREEIMAGE=1 -D X11=1
 
 # do not use freeimage
-CFLAGS = --std=c++17 -lstdc++ -framework GLUT -framework OpenGL -Wno-deprecated
-# CFLAGS = --std=c++17 -lstdc++ -lglut -lGLU -lGL -I/opt/X11/include -L/opt/X11/lib -Wno-deprecated -D X11=1
+# CFLAGS = --std=c++17 -lstdc++ -framework GLUT -framework OpenGL -Wno-deprecated
+CFLAGS = -g --std=c++17 -lstdc++ -lglut -lGLU -lGL -I/opt/X11/include -L/opt/X11/lib -Wno-deprecated -D X11=1
 
 RM = rm -rf
 

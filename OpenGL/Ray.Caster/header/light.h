@@ -17,6 +17,7 @@ public:
     bool isSpotlight;
     float spot_cutoff;
     float spot_exponent;
+    float attenuation;
 
     Light(const Light &l)
     {
@@ -30,6 +31,7 @@ public:
         isSpotlight = l.isSpotlight;
         spot_cutoff = l.spot_cutoff;
         spot_exponent = l.spot_exponent;
+        attenuation = 1;
     }
 
     Light()
@@ -42,8 +44,9 @@ public:
         isPointLight = true;
         isGlobalAmbient = false;
         isSpotlight = false;
-        spot_cutoff = 90;
+        spot_cutoff = 180;
         spot_exponent = 1;
+        attenuation = 1;
     }
 
     Light(float ar, float ag, float ab, float aa)
@@ -56,8 +59,9 @@ public:
         isPointLight = true;
         isGlobalAmbient = false;
         isSpotlight = false;
-        spot_cutoff = 90;
+        spot_cutoff = 180;
         spot_exponent = 1;
+        attenuation = 1;
     }
 
     Light(Color &a)
@@ -70,8 +74,9 @@ public:
         isPointLight = false;
         isGlobalAmbient = true;
         isSpotlight = false;
-        spot_cutoff = 90;
+        spot_cutoff = 180;
         spot_exponent = 1;
+        attenuation = 1;
     }
 
     Light(float ar, float ag, float ab, float aa, float dr, float dg, float db,
@@ -89,8 +94,9 @@ public:
             direction.set(px, py, pz, ph);
         isGlobalAmbient = false;
         isSpotlight = false;
-        spot_cutoff = 90;
+        spot_cutoff = 180;
         spot_exponent = 1;
+        attenuation = 1;
     }
 
     Light(float ar, float ag, float ab, float aa, float dr, float dg, float db,
@@ -115,6 +121,7 @@ public:
         isSpotlight = true;
         spot_cutoff = cutoff;
         spot_exponent = exponent;
+        attenuation = 1;
     }
 
     Light(Color &a, Color &d, Color &s, Point &p)
@@ -130,8 +137,9 @@ public:
             direction.set(p.x, p.y, p.z, p.h);
         isGlobalAmbient = false;
         isSpotlight = false;
-        spot_cutoff = 90;
+        spot_cutoff = 180;
         spot_exponent = 1;
+        attenuation = 1;
     }
 
     void set(float ar, float ag, float ab, float aa, float dr, float dg,
@@ -149,8 +157,9 @@ public:
             direction.set(px, py, pz, ph);
         isGlobalAmbient = false;
         isSpotlight = false;
-        spot_cutoff = 90;
+        spot_cutoff = 180;
         spot_exponent = 1;
+        attenuation = 1;
     }
 
     void set(float ar, float ag, float ab, float aa, float dr, float dg, float db,
@@ -175,6 +184,7 @@ public:
         isSpotlight = true;
         spot_cutoff = cutoff;
         spot_exponent = exponent;
+        attenuation = 1;
     }
 
     void set(Color &a, Color &d, Color &s, Point &p)
@@ -190,8 +200,9 @@ public:
             direction.set(p.x, p.y, p.z, p.h);
         isGlobalAmbient = false;
         isSpotlight = false;
-        spot_cutoff = 90;
+        spot_cutoff = 180;
         spot_exponent = 1;
+        attenuation = 1;
     }
 
     void setAmbient(float ar, float ag, float ab, float aa)

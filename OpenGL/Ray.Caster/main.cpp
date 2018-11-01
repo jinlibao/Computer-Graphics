@@ -30,7 +30,7 @@ Object o4("cylinder", 0.15, 0.5, 0.25, -0.35, -1.125, 0, 1, 1);
 // set parameters for lights
 Light globalAmbient(0.25, 0.05, 0.05, 1);
 Light pointLight(0.65, 0.65, 0.65, 1, 0, 0, 0, 1, 0, 0, 0, 1, 200, 100, 50, 1);
-Light spotlight(0, 0, 0, 1, 0, 0, 0, 1, 0.4, 0.4, 0.7, 1, -1, 0, 1, 1, 0, 0, -1, 0, 30, 0.5);
+Light spotlight(0, 0, 0, 1, 0, 0, 0, 1, 0.4, 0.4, 0.7, 1, -1, 0, 1, 1, 0, 0, -1, 0, 29, 5);
 Light yellowLight(0, 0, 0, 1, 0.8, 0.8, 0.6, 1, 0, 0, 0, 1, -400, 692, 0, 0);
 // use STL vector to store objects and lights
 vector<Object> objects;
@@ -43,7 +43,7 @@ void init()
     objects.push_back(o1);
     objects.push_back(o2);
     objects.push_back(o3);
-    objects.push_back(o4);
+    // objects.push_back(o4);
 
     // add lights to the light list
     lights.push_back(globalAmbient);
