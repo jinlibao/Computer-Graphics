@@ -2,6 +2,7 @@
 #define MATRIX_H
 
 #include <cmath>
+#include <cstdio>
 
 class Point;
 class Vector;
@@ -27,6 +28,7 @@ public:
     const Point &operator+(const Vector &) const;
     const Point &operator-(const Vector &) const;
     void operator=(const Point &);
+    void Print();
 };
 
 // 3D vectors
@@ -52,6 +54,7 @@ public:
     const Vector &operator-(const Vector &) const;
     const Vector &operator*(float)const;
     void operator=(const Vector &);
+    void Print();
 };
 
 // Matrices
@@ -76,6 +79,7 @@ public:
     void operator=(const Matrix &);               // set matrix from matrix
     void operator=(float *);                      // set matrix from array
     void SetToIdentity(); // set matrix to identity matrix
+    void Print();
 };
 
 // Transformations
@@ -124,6 +128,11 @@ Point::Point(const Point &p)
     h = p.h;
 }
 
+void Point::Print()
+{
+    printf("[%f, %f, %f, %f]\n\n", x, y, z, h);
+}
+
 void Point::set(float i, float j, float k)
 {
     x = i;
@@ -147,6 +156,9 @@ float Point::distFromOrigin()
     return sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
 }
 
+void Vector::Print() {
+    printf("[%f, %f, %f, %f]\n\n", x, y, z, h);
+}
 const Vector &Point::operator-(const Point &p) const
 {
     Vector *r = new Vector(x - p.x, y - p.y, z - p.z);
@@ -605,6 +617,17 @@ float Matrix::Determinant()
            m[8] * m[5] * m[2] * m[15] + m[4] * m[9] * m[2] * m[15] +
            m[8] * m[1] * m[6] * m[15] - m[0] * m[9] * m[6] * m[15] -
            m[4] * m[1] * m[10] * m[15] + m[0] * m[5] * m[10] * m[15];
+}
+
+void Matrix::Print()
+{
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            printf("%f ", m[j * 4 + i]);
+        }
+        printf("\n");
+    }
+    printf("\n");
 }
 
 #endif
