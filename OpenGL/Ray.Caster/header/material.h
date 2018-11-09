@@ -65,6 +65,17 @@ public:
 
     Material(float ar, float ag, float ab, float aa, float dr, float dg,
              float db, float da, float sr, float sg, float sb, float si,
+             float shininess)
+    {
+        ambient.set(ar, ag, ab, aa);
+        diffuse.set(dr, dg, db, da);
+        specular.set(sr, sg, sb, si);
+        this->shininess = shininess;
+        attenuation = 1;
+    }
+
+    Material(float ar, float ag, float ab, float aa, float dr, float dg,
+             float db, float da, float sr, float sg, float sb, float si,
              float er, float eg, float eb, float ea)
     {
         ambient.set(ar, ag, ab, aa);
@@ -72,6 +83,18 @@ public:
         specular.set(sr, sg, sb, si);
         emission.set(er, eg, eb, ea);
         shininess = 1;
+        attenuation = 1;
+    }
+
+    Material(float ar, float ag, float ab, float aa, float dr, float dg,
+             float db, float da, float sr, float sg, float sb, float si,
+             float er, float eg, float eb, float ea, float sh)
+    {
+        ambient.set(ar, ag, ab, aa);
+        diffuse.set(dr, dg, db, da);
+        specular.set(sr, sg, sb, si);
+        emission.set(er, eg, eb, ea);
+        shininess = sh;
         attenuation = 1;
     }
 
@@ -130,6 +153,17 @@ public:
 
     void set(float ar, float ag, float ab, float aa, float dr, float dg,
              float db, float da, float sr, float sg, float sb, float si,
+             float shininess)
+    {
+        ambient.set(ar, ag, ab, aa);
+        diffuse.set(dr, dg, db, da);
+        specular.set(sr, sg, sb, si);
+        this->shininess = shininess;
+        attenuation = 1;
+    }
+
+    void set(float ar, float ag, float ab, float aa, float dr, float dg,
+             float db, float da, float sr, float sg, float sb, float si,
              float er, float eg, float eb, float ea)
     {
         ambient.set(ar, ag, ab, aa);
@@ -137,6 +171,18 @@ public:
         specular.set(sr, sg, sb, si);
         emission.set(er, eg, eb, ea);
         shininess = 1;
+        attenuation = 1;
+    }
+
+    void set(float ar, float ag, float ab, float aa, float dr, float dg,
+             float db, float da, float sr, float sg, float sb, float si,
+             float er, float eg, float eb, float ea, float sh)
+    {
+        ambient.set(ar, ag, ab, aa);
+        diffuse.set(dr, dg, db, da);
+        specular.set(sr, sg, sb, si);
+        emission.set(er, eg, eb, ea);
+        shininess = sh;
         attenuation = 1;
     }
 

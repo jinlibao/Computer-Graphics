@@ -29,7 +29,7 @@ void saveImage()
         }
     }
     char filename[100] = "";
-    sprintf(filename, "output/raycast_%03d.png", frameNumber++);
+    sprintf(filename, "../output/raycast_%03d.png", frameNumber++);
     if (FreeImage_Save(FIF_PNG, bitmap, filename, 0))
         cout << "Image successfully saved: " << filename << endl;
     FreeImage_DeInitialise();

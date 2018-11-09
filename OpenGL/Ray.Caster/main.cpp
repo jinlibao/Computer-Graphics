@@ -1,5 +1,5 @@
 // main.cpp
-// COSC 5450 Project 3a: RayCaster
+// COSC 5450 Project 3a/3b: RayCaster/RayShader
 // Libao Jin
 // ljin1@uwyo.edu
 
@@ -10,7 +10,8 @@ float const ASPECT = (float)WIDTH / HEIGHT;
 #include "header/usefreeimage.h"
 
 // set parameters for the environment
-bool isPerspectiveProjection = true;
+bool isPerspectiveProjection = false;
+bool addEmission = false;
 float viewScreenWidth = 0.5;
 float viewAngle = 32;
 float W = viewScreenWidth / 2;
@@ -23,14 +24,17 @@ Point look(0, 0, 0);
 Vector up(0, 1, 0);
 Color backgroundColor(0.5, 0.5, 0.5);
 // define spheres and a cylinder
-Object o1("sphere", 0.125, 0.125, -0.25, -1, 1, 0, 0);
-Object o2("sphere", 0.375, 0.5, 0.5, -1.75, 0, 1, 0);
-Object o3("sphere", 0.75, -0.5, 0, -2.5, 0, 0, 1);
+Material m1(0.5, 0.5, 0.5, 1, 0.7, 0.7, 0.7, 1, 0.9, 0.9, 0.9, 1, 1, 0, 0, 1, 3);
+Material m2(0.5, 0.5, 0.5, 1, 0.4, 0.4, 0.4, 1, 0.001, 0.001, 0.001, 1, 0, 1, 0, 1, 1);
+Material m3(0.23125, 0.23125, 0.23125, 1, 0.2775, 0.2775, 0.2775, 1, 0.6, 0.6, 0.6, 1, 0, 0, 1, 1, 89.6);
+Object o1("sphere", 0.125, 0.125, -0.25, -1, m1);
+Object o2("sphere", 0.375, 0.5, 0.5, -1.75, m2);
+Object o3("sphere", 0.75, -0.5, 0, -2.5, m3);
 Object o4("cylinder", 0.15, 0.5, 0.25, -0.35, -1.125, 0, 1, 1);
 // set parameters for lights
 Light globalAmbient(0.25, 0.05, 0.05, 1);
 Light pointLight(0.65, 0.65, 0.65, 1, 0, 0, 0, 1, 0, 0, 0, 1, 200, 100, 50, 1);
-Light spotlight(0, 0, 0, 1, 0, 0, 0, 1, 0.4, 0.4, 0.7, 1, -1, 0, 1, 1, 0, 0, -1, 0, 29, 5);
+Light spotlight(0, 0, 0, 1, 0, 0, 0, 1, 0.4, 0.4, 0.7, 1, -1, 0, 1, 1, 0, 0, -1, 0, 30, 0.5);
 Light yellowLight(0, 0, 0, 1, 0.8, 0.8, 0.6, 1, 0, 0, 0, 1, -400, 692, 0, 0);
 // use STL vector to store objects and lights
 vector<Object> objects;
@@ -61,7 +65,7 @@ void display()
     // update the parameters for raycaster
     raycaster.set(backgroundColor, WIDTH, HEIGHT, blockSize[blockIndex], N, W, H, eye, look, up);
     // ray tracing and draw the pixmap
-    raycaster.cast(objects, lights, isPerspectiveProjection);
+    raycaster.cast(objects, lights, isPerspectiveProjection, addEmission);
 
     if (USEFREEIMAGE) saveImage();
     glutSwapBuffers();
@@ -86,6 +90,10 @@ void keyboard(unsigned char key, int x, int y)
     case 'P':
         isPerspectiveProjection = true;
         break;
+    case 'e':
+    case 'E':
+        addEmission = !addEmission;
+        break;
     case 27:
         exit(0);
         break;
@@ -101,7 +109,12 @@ int main(int argc, char **argv)
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(WIDTH, HEIGHT);
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("COSC 5450 Project 3b: RayCaster by Libao Jin");
+    if (strcmp(PROJECT, "proj3a") == 0)
+        glutCreateWindow("COSC 5450 Project 3a: RayCaster by Libao Jin");
+    else if (strcmp(PROJECT, "proj3b") == 0)
+        glutCreateWindow("COSC 5450 Project 3b: RayShader by Libao Jin");
+    else
+        glutCreateWindow("COSC 5450 Project 3c: RayTracer by Libao Jin");
     init();
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);

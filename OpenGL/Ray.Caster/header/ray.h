@@ -1,9 +1,9 @@
 // ray.h
 // Implementation for Ray and RayCast Class
-// COSC 5450 Project 3a
+// COSC 5450 Project 3a/3b
 // Libao Jin
 // ljin1@uwyo.edu
-// 10/29/2018
+// 11/09/2018
 
 #ifndef RAY_H
 #define RAY_H
@@ -24,9 +24,11 @@
 #include <GL/glut.h>
 #endif
 
+#ifndef PROJECT
+#define PROJECT "proj3b"
+#endif
+
 #define max(a, b) (a > b ? a : b)
-#define LIGHTSON true
-// #define LIGHTSON false
 
 using namespace std;
 
@@ -113,18 +115,15 @@ public:
             pixmap[row] = pixmap[row - 1] + nCols;
     }
 
-    void cast(vector<Object> &objects, vector<Light> &lights,
-              bool isPerspectiveProjection = true)
+    void cast(vector<Object> &objects, vector<Light> &lights, bool isPerspectiveProjection = false, bool addEmission = false)
     {
-
         Color hitColor;
         float t_hit;
         for (int r = 0; r < nRows; r += blockSize) {
             for (int c = 0; c < nCols; c += blockSize) {
                 // reset t_hit to be inf (FLT_MAX)
                 t_hit = FLT_MAX;
-                // calculate the direction of the ray
-                // perspective projection
+                // calculate the direction of the ray perspective projection
                 if (isPerspectiveProjection) {
                     ray.dir = n * (-N) + u * (W * (2.0 * c / nCols - 1)) +
                               v * (H * (2.0 * r / nRows - 1));
@@ -134,7 +133,8 @@ public:
                 else {
                     ray.dir = n * (-N);
                     ray.start.set(W * (2.0 * c / nCols - 1),
-                                  H * (2.0 * r / nRows - 1), ray.start.z);
+                                  H * (2.0 * r / nRows - 1),
+                                  ray.start.z);
                 }
                 for (auto &o : objects) {
                     // calculate the inverse of the ray
@@ -149,14 +149,16 @@ public:
                         float delta = pow(B, 2) - 4 * A * C;
                         // if there is no intersection, select background color
                         if (delta < 0) {
-                            if (t_hit == FLT_MAX) hitColor.set(backgroundColor);
+                            if (t_hit == FLT_MAX)
+                                hitColor.set(trace(lights, backgroundColor));
                         }
                         // if there is exact one intersection
                         else if (delta < FLT_MIN) {
-                            float t = -B / (2 * A) >= 0 ? -B / (2 * A) : FLT_MAX;
+                            float t =
+                                -B / (2 * A) >= 0 ? -B / (2 * A) : FLT_MAX;
                             if (t < t_hit) {
                                 t_hit = t;
-                                hitColor.set(trace(lights, ray, o, t_hit));
+                                hitColor.set(trace(lights, ray, o, t_hit, addEmission));
                             }
                         }
                         // if there are intersections, select the smaller one
@@ -168,7 +170,7 @@ public:
                             t1 = min(t1, t2);
                             if (t1 < t_hit) {
                                 t_hit = t1;
-                                hitColor.set(trace(lights, ray, o, t_hit));
+                                hitColor.set(trace(lights, ray, o, t_hit, addEmission));
                             }
                         }
                     }
@@ -181,15 +183,18 @@ public:
                         float C = pow(center2d.distFromOrigin(), 2) - 1;
                         float delta = pow(B, 2) - 4 * A * C;
                         if (delta < 0) {
-                            if (t_hit == FLT_MAX) hitColor.set(backgroundColor);
+                            if (t_hit == FLT_MAX)
+                                hitColor.set(trace(lights, backgroundColor));
                         }
                         else if (delta < FLT_MIN) {
-                            float t = -B / (2 * A) >= 0 ? -B / (2 * A) : FLT_MAX;
+                            float t =
+                                -B / (2 * A) >= 0 ? -B / (2 * A) : FLT_MAX;
                             if (t < t_hit) {
-                                float yy = inverseRay.start.y + inverseRay.dir.y * t;
+                                float yy =
+                                    inverseRay.start.y + inverseRay.dir.y * t;
                                 if (yy >= 0 && yy <= 1.0) {
                                     t_hit = t;
-                                    hitColor.set(trace(lights, ray, o, t_hit));
+                                    hitColor.set(trace(lights, ray, o, t_hit, addEmission));
                                 }
                             }
                         }
@@ -203,7 +208,7 @@ public:
                                 float yy = inverseRay.start.y + inverseRay.dir.y * t1;
                                 if (yy >= 0 && yy <= 1.0) {
                                     t_hit = t1;
-                                    hitColor.set(trace(lights, ray, o, t_hit));
+                                    hitColor.set(trace(lights, ray, o, t_hit, addEmission));
                                 }
                             }
                         }
@@ -218,15 +223,6 @@ public:
                         pixmap[r + i][c + j].b = (unsigned char)(hitColor.b * 255);
                     }
                 }
-
-                // use `glRectf` to set the color
-                // glRasterPos2i(0.0, 0.0);
-                // glColor4f(hitColor.r, hitColor.g, hitColor.b, hitColor.a);
-                // float x1 = ((float)c / nCols - 1.0 / 2) * 0.50;
-                // float y1 = ((float)r / nRows - 1.0 / 2) * 0.40;
-                // float x2 = ((float)(c + blockSize) / nCols - 1.0 / 2) * 0.50;
-                // float y2 = ((float)(r + blockSize) / nRows - 1.0 / 2) * 0.40;
-                // glRectf(x1, y1, x2, y2);
             }
         }
 
@@ -236,12 +232,10 @@ public:
         glDrawPixels(nCols, nRows, GL_RGB, GL_UNSIGNED_BYTE, pixmap[0]);
     }
 
-    Color trace(vector<Light> &lights, Ray &ray, Object &o, float t_hit)
+    Color trace(vector<Light> &lights, Ray &ray, Object &o, float t_hit, bool addEmission)
     {
-        // Color total(o.material.emission);
         Color total;
-
-        if (LIGHTSON) {
+        if (strcmp(PROJECT, "proj3b") == 0) {
             Point hitPoint = getHitPoint(ray.start, ray.dir, t_hit);
             Vector V = getV(hitPoint, ray.start);
             Vector N = getNormal(o, hitPoint);
@@ -249,21 +243,46 @@ public:
                 Vector L = getL(l.position, hitPoint);
                 Vector R = getR(N, L);
                 Vector H = getH(V, L);
+                // global ambient light
                 if (l.isGlobalAmbient) {
                     total += l.ambient * o.material.ambient;
                 }
                 else {
                     l.attenuation = getAttenuation(l, hitPoint);
-                    total += l.ambient * o.material.ambient;
+                    // add local ambient light
+                    total += l.ambient * o.material.ambient * l.attenuation;
+                    // add local diffuse light
                     total += l.diffuse * o.material.diffuse * max(0, L.dot(N)) * l.attenuation;
-                    // total += l.specular * o.material.specular * pow(max(0, R.dot(V)), o.material.shininess) * l.attenuation;
+                    // add local specular light
                     total += l.specular * o.material.specular * pow(max(0, H.dot(N)), o.material.shininess) * l.attenuation;
                 }
             }
         }
+        if (strcmp(PROJECT, "proj3a") == 0 || addEmission) {
+            // for project 3a, set the color of the sphere
+            total += o.material.emission;
+        }
         return total;
     }
 
+    // calculate the background color if the ray does not hit the object
+    Color trace(vector<Light> &lights, Color backgroundColor)
+    {
+        Color total;
+        if (strcmp(PROJECT, "proj3b") == 0) {
+            for (auto &l : lights) {
+                if (l.isGlobalAmbient) {
+                    total += backgroundColor * l.ambient;
+                }
+            }
+        }
+        else {
+            total.set(backgroundColor);
+        }
+        return total;
+    }
+
+    // calcuculate the hit point
     Point getHitPoint(Point start, Vector dir, float t_hit)
     {
         Point hitPoint;
@@ -271,8 +290,7 @@ public:
         return hitPoint;
     }
 
-    // the direction vector from the point on the surface toward each light
-    // source
+    // direction vector from the point on the surface toward each light source
     Vector getL(Point lightPos, Point hitPoint)
     {
         Vector L;
@@ -284,6 +302,7 @@ public:
         return L;
     }
 
+    // calculate normal vector on the surface of the sphere
     Vector getNormal(Object o, Point hitPoint)
     {
         Vector N(hitPoint - o.center);
@@ -291,6 +310,7 @@ public:
         return N;
     }
 
+    // calculate reflection vector
     Vector getR(Vector N, Vector L)
     {
         Vector R(N * (N.dot(L) * 2) - L);
@@ -298,6 +318,7 @@ public:
         return R;
     }
 
+    // calculate view vector
     Vector getV(Point hitPoint, Point start)
     {
         Vector V(start - hitPoint);
@@ -305,6 +326,7 @@ public:
         return V;
     }
 
+    // calculate halfway vector
     Vector getH(Vector V, Vector L)
     {
         V.normalize();
@@ -314,7 +336,7 @@ public:
         return H;
     }
 
-    float getAttenuation(Light light, Point hitPoint, float c = 0.15, float l = 0.05, float q = 0.05)
+    float getAttenuation(Light light, Point hitPoint, float c = 1.0, float l = 0.02, float q = 0.0001)
     {
         Vector L(hitPoint - light.position);
         Vector D(light.direction);
@@ -323,8 +345,10 @@ public:
         D.normalize();
         float attenuation = 1.0;
         if (light.isPointLight) {
-            attenuation = 1 / (c + l * d + q * d * d);
+            // attenuation = 1 / (c + l * d + q * d * d);
             if (light.isSpotlight) {
+                attenuation = 1 / (c + l * d + q * d * d);
+                // check whether the object can be reached by the spotlight
                 if (L.dot(D) < cos(light.spot_cutoff * pi / 180))
                     attenuation *= 0;
                 else

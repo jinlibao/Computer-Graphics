@@ -68,6 +68,15 @@ public:
         setTransform(this->radius, this->length, this->center);
     }
 
+    Object(string type, float radius, float x, float y, float z, Material &m)
+    {
+        this->type = type;
+        this->radius = radius;
+        center.set(x, y, z);
+        material.set(m);
+        setTransform(radius, center);
+    }
+
     Object(string type, float radius, float x, float y, float z, float r, float g, float b)
     {
         this->type = type;
