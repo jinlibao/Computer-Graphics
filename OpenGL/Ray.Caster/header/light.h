@@ -57,7 +57,7 @@ public:
         position.set(0, 1, 0, 1);
         direction.set(1, 1, 1, 0);
         isPointLight = true;
-        isGlobalAmbient = false;
+        isGlobalAmbient = true;
         isSpotlight = false;
         spot_cutoff = 180;
         spot_exponent = 1;
