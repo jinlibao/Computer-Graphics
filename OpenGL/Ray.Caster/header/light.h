@@ -1,3 +1,9 @@
+// light.h
+// Implementation for Light Class
+// COSC 5450 Project 3b/3c
+// Libao Jin
+// Updated date: 11/15/2018
+
 #ifndef LIGHT_H
 #define LIGHT_H
 

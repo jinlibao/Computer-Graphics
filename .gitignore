@@ -31,4 +31,8 @@
 *.out
 *.app
 
+# macOS temp files
 .DS_Store
+
+# VSCode settings
+# .vscode/

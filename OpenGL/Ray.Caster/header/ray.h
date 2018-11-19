@@ -1,9 +1,9 @@
 // ray.h
 // Implementation for Ray and RayCast Class
-// COSC 5450 Project 3a/3b
+// COSC 5450 Project 3a/3b/3c
 // Libao Jin
 // ljin1@uwyo.edu
-// 11/09/2018
+// Updated date: 11/19/2018
 
 #ifndef RAY_H
 #define RAY_H
@@ -13,6 +13,11 @@
 #include <cfloat>
 #include <iostream>
 #include <vector>
+
+#ifdef __WIN32__
+#include <windows.h>
+#define WIN32_LEAN_AND_MEAN
+#endif
 
 #if defined __APPLE__ && !defined X11
 #include <GLUT/glut.h>
@@ -25,8 +30,10 @@
 #endif
 
 #ifndef PROJECT
-#define PROJECT "proj3b"
+#define PROJECT "proj3c"
 #endif
+
+#define SHININESS_THRESHOLD 0.5
 
 #define max(a, b) (a > b ? a : b)
 
@@ -115,14 +122,10 @@ public:
             pixmap[row] = pixmap[row - 1] + nCols;
     }
 
-    void cast(vector<Object> &objects, vector<Light> &lights, bool isPerspectiveProjection = false, bool addEmission = false)
+    void cast(vector<Object> &objects, vector<Light> &lights, int level = 3, bool isPerspectiveProjection = false, bool addEmission = false)
     {
-        Color hitColor;
-        float t_hit;
         for (int r = 0; r < nRows; r += blockSize) {
             for (int c = 0; c < nCols; c += blockSize) {
-                // reset t_hit to be inf (FLT_MAX)
-                t_hit = FLT_MAX;
                 // calculate the direction of the ray perspective projection
                 if (isPerspectiveProjection) {
                     ray.dir = n * (-N) + u * (W * (2.0 * c / nCols - 1)) +
@@ -136,85 +139,7 @@ public:
                                   H * (2.0 * r / nRows - 1),
                                   ray.start.z);
                 }
-                for (auto &o : objects) {
-                    // calculate the inverse of the ray
-                    inverseRay.setDir(o.inverse_transform_matrix * ray.dir);
-                    inverseRay.setStart(o.inverse_transform_matrix * ray.start);
-                    // determine whether there are intersections with objects
-                    if (o.type == "sphere") {
-                        float dirLength = inverseRay.dir.magnitude();
-                        float A = pow(dirLength, 2);
-                        float B = 2 * inverseRay.dir.dot(inverseRay.start);
-                        float C = pow(inverseRay.start.distFromOrigin(), 2) - 1;
-                        float delta = pow(B, 2) - 4 * A * C;
-                        // if there is no intersection, select background color
-                        if (delta < 0) {
-                            if (t_hit == FLT_MAX)
-                                hitColor.set(trace(lights, backgroundColor));
-                        }
-                        // if there is exact one intersection
-                        else if (delta < FLT_MIN) {
-                            float t =
-                                -B / (2 * A) >= 0 ? -B / (2 * A) : FLT_MAX;
-                            if (t < t_hit) {
-                                t_hit = t;
-                                hitColor.set(trace(lights, ray, o, t_hit, addEmission));
-                            }
-                        }
-                        // if there are intersections, select the smaller one
-                        else {
-                            float t1 = (-B + sqrt(delta)) / (2 * A);
-                            float t2 = (-B - sqrt(delta)) / (2 * A);
-                            t1 = t1 >= 0 ? t1 : FLT_MAX;
-                            t2 = t2 >= 0 ? t2 : FLT_MAX;
-                            t1 = min(t1, t2);
-                            if (t1 < t_hit) {
-                                t_hit = t1;
-                                hitColor.set(trace(lights, ray, o, t_hit, addEmission));
-                            }
-                        }
-                    }
-                    // when the object is a cylinder, similar to spheres
-                    else if (o.type == "cylinder") {
-                        Vector dir2d(inverseRay.dir.x, 0.0, inverseRay.dir.z);
-                        Point center2d(inverseRay.start.x, 0.0, inverseRay.start.z);
-                        float A = pow(dir2d.magnitude(), 2);
-                        float B = dir2d.dot(center2d) * 2;
-                        float C = pow(center2d.distFromOrigin(), 2) - 1;
-                        float delta = pow(B, 2) - 4 * A * C;
-                        if (delta < 0) {
-                            if (t_hit == FLT_MAX)
-                                hitColor.set(trace(lights, backgroundColor));
-                        }
-                        else if (delta < FLT_MIN) {
-                            float t =
-                                -B / (2 * A) >= 0 ? -B / (2 * A) : FLT_MAX;
-                            if (t < t_hit) {
-                                float yy =
-                                    inverseRay.start.y + inverseRay.dir.y * t;
-                                if (yy >= 0 && yy <= 1.0) {
-                                    t_hit = t;
-                                    hitColor.set(trace(lights, ray, o, t_hit, addEmission));
-                                }
-                            }
-                        }
-                        else {
-                            float t1 = (-B + sqrt(delta)) / (2 * A);
-                            float t2 = (-B - sqrt(delta)) / (2 * A);
-                            t1 = t1 > 0 ? t1 : FLT_MAX;
-                            t2 = t2 > 0 ? t2 : FLT_MAX;
-                            t1 = min(t1, t2);
-                            if (t1 < t_hit) {
-                                float yy = inverseRay.start.y + inverseRay.dir.y * t1;
-                                if (yy >= 0 && yy <= 1.0) {
-                                    t_hit = t1;
-                                    hitColor.set(trace(lights, ray, o, t_hit, addEmission));
-                                }
-                            }
-                        }
-                    }
-                }
-
+                Color hitColor(shade(ray, objects, lights, addEmission, level));
                 // place the color in the rc-th pixel
                 for (int i = 0; i < blockSize; ++i) {
                     for (int j = 0; j < blockSize; ++j) {
@@ -232,10 +157,113 @@ public:
         glDrawPixels(nCols, nRows, GL_RGB, GL_UNSIGNED_BYTE, pixmap[0]);
     }
 
+    Color shade(Ray ray, vector<Object> &objects, vector<Light> &lights, bool addEmission, int level)
+    {
+        Color hitColor;
+        float t_hit = FLT_MAX;  // set t_hit to be inf (FLT_MAX)
+        for (auto &o : objects) {
+            // calculate the inverse of the ray
+            inverseRay.setDir(o.inverse_transform_matrix * ray.dir);
+            inverseRay.setStart(o.inverse_transform_matrix * ray.start);
+            // determine whether there are intersections with objects
+            if (o.type == "sphere") {
+                float dirLength = inverseRay.dir.magnitude();
+                float A = pow(dirLength, 2);
+                float B = 2 * inverseRay.dir.dot(inverseRay.start);
+                float C = pow(inverseRay.start.distFromOrigin(), 2) - 1;
+                float delta = pow(B, 2) - 4 * A * C;
+                // if there is no intersection, select background color
+                if (delta < 0) {
+                    if (t_hit == FLT_MAX)
+                        hitColor.set(trace(lights, backgroundColor));
+                }
+                // if there is exact one intersection
+                else if (delta < FLT_MIN) {
+                    float t =
+                        -B / (2 * A) >= 0 ? -B / (2 * A) : FLT_MAX;
+                    if (t < t_hit) {
+                        t_hit = t;
+                        hitColor.set(trace(lights, ray, o, t_hit, addEmission));
+                    }
+                }
+                // if there are intersections, select the smaller one
+                else {
+                    float t1 = (-B + sqrt(delta)) / (2 * A);
+                    float t2 = (-B - sqrt(delta)) / (2 * A);
+                    t1 = t1 > 0 ? t1 : FLT_MAX;
+                    t2 = t2 > 0 ? t2 : FLT_MAX;
+                    t1 = min(t1, t2);
+                    // make sure the ray is 
+                    if (t1 <= 1e-3)
+                        t1 = FLT_MAX;
+                    if (t1 < t_hit) {                        t_hit = t1;
+                        hitColor.set(trace(lights, ray, o, t_hit, addEmission));
+                        // if the object is shiny enough and the level is greater than 0, then do the reflection
+                        if (o.material.shininess > SHININESS_THRESHOLD && level > 0) {
+                            Ray reflectionRay = getReflectionRay(ray, o, t_hit);
+                            // reflectionColor: the color got from reflection ray
+                            Color reflectionColor = shade(reflectionRay, objects, lights, addEmission, level - 1);
+                            // noHitColor: the background color
+                            Color noHitColor(trace(lights, backgroundColor));
+                            // if reflection ray does hit an object, then add up two colors
+                            if (reflectionColor != noHitColor)
+                                hitColor += reflectionColor;
+                        }
+                        // Ray refractionRay = getRefractionRay(ray, o, t_hit);
+                        // if (refractionRay.dir.magnitude() > 0 && level > 0)
+                        //     hitColor += shade(refractionRay, objects, lights, addEmission, level - 1);
+                    }
+                }
+            }
+            /*
+            // when the object is a cylinder, similar to spheres
+            else if (o.type == "cylinder") {
+                Vector dir2d(inverseRay.dir.x, 0.0, inverseRay.dir.z);
+                Point center2d(inverseRay.start.x, 0.0, inverseRay.start.z);
+                float A = pow(dir2d.magnitude(), 2);
+                float B = dir2d.dot(center2d) * 2;
+                float C = pow(center2d.distFromOrigin(), 2) - 1;
+                float delta = pow(B, 2) - 4 * A * C;
+                if (delta < 0) {
+                    if (t_hit == FLT_MAX)
+                        hitColor.set(trace(lights, backgroundColor));
+                }
+                else if (delta < FLT_MIN) {
+                    float t =
+                        -B / (2 * A) >= 0 ? -B / (2 * A) : FLT_MAX;
+                    if (t < t_hit) {
+                        float yy =
+                            inverseRay.start.y + inverseRay.dir.y * t;
+                        if (yy >= 0 && yy <= 1.0) {
+                            t_hit = t;
+                            hitColor.set(trace(lights, ray, o, t_hit, addEmission));
+                        }
+                    }
+                }
+                else {
+                    float t1 = (-B + sqrt(delta)) / (2 * A);
+                    float t2 = (-B - sqrt(delta)) / (2 * A);
+                    t1 = t1 > 0 ? t1 : FLT_MAX;
+                    t2 = t2 > 0 ? t2 : FLT_MAX;
+                    t1 = min(t1, t2);
+                    if (t1 < t_hit) {
+                        float yy = inverseRay.start.y + inverseRay.dir.y * t1;
+                        if (yy >= 0 && yy <= 1.0) {
+                            t_hit = t1;
+                            hitColor.set(trace(lights, ray, o, t_hit, addEmission));
+                        }
+                    }
+                }
+            }
+            */
+        }
+        return hitColor;
+    }
+
     Color trace(vector<Light> &lights, Ray &ray, Object &o, float t_hit, bool addEmission)
     {
         Color total;
-        if (strcmp(PROJECT, "proj3b") == 0) {
+        if (strcmp(PROJECT, "proj3a") != 0) {
             Point hitPoint = getHitPoint(ray.start, ray.dir, t_hit);
             Vector V = getV(hitPoint, ray.start);
             Vector N = getNormal(o, hitPoint);
@@ -269,7 +297,7 @@ public:
     Color trace(vector<Light> &lights, Color backgroundColor)
     {
         Color total;
-        if (strcmp(PROJECT, "proj3b") == 0) {
+        if (strcmp(PROJECT, "proj3a") != 0) {
             for (auto &l : lights) {
                 if (l.isGlobalAmbient) {
                     total += backgroundColor * l.ambient;
@@ -356,6 +384,37 @@ public:
             }
         }
         return attenuation;
+    }
+
+    Ray getRefractionRay(Ray ray, Object o, float t_hit, float ni = 1, float nt = 2)
+    {
+        Vector d(ray.dir);
+        d.normalize();
+        Point hitPoint(getHitPoint(ray.start, ray.dir, t_hit));
+        Vector normal(getNormal(o, hitPoint));
+        normal.normalize();
+        float determinant = 1 - pow(ni, 2) / pow(nt, 2) * (1 - pow(d.dot(normal), 2));
+        Vector rd;  // refraction direction
+        if (determinant < 0) { // there is no refractoin ray
+            rd.set(0, 0, 0);
+        }
+        else {
+           rd.set((d - normal * d.dot(normal)) * (ni / nt) - normal * sqrt(determinant));
+        }
+        Ray refractionRay(hitPoint, rd);
+        return refractionRay;
+    }
+
+    Ray getReflectionRay(Ray ray, Object o, float t_hit)
+    {
+        Point hitPoint(getHitPoint(ray.start, ray.dir, t_hit));
+        Vector normal(getNormal(o, hitPoint));
+        normal.normalize();
+        Vector d(ray.dir);
+        d.normalize();
+        Vector rd(d - normal * (2 * d.dot(normal)));
+        Ray reflectionRay(hitPoint, rd);
+        return reflectionRay;
     }
 };
 

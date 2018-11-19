@@ -27,6 +27,13 @@ if (OPENGL_USE_APPLE_X11)
     string (REPLACE ";" " " BTARGETFLAGS "${BTARGETFLAGS}")
     set_target_properties (main3bX11 PROPERTIES COMPILE_FLAGS ${BTARGETFLAGS})
     target_link_libraries (main3bX11 ${EXTRA_LIBS})
+    # project 3c
+    add_executable (main3cX11 main.cpp)
+    set (CTARGETFLAGS -DX11=1 -DPROJECT=\\"proj3c\\")
+    string (REPLACE ";" " " CTARGETFLAGS "${CTARGETFLAGS}")
+    set_target_properties (main3cX11 PROPERTIES COMPILE_FLAGS ${CTARGETFLAGS})
+    target_link_libraries (main3cX11 ${EXTRA_LIBS})
+
 
     if (USE_FREEIMAGE)
         # add FreeImage include and lib
@@ -46,6 +53,12 @@ if (OPENGL_USE_APPLE_X11)
         set (BTARGETFLAGS "${BTARGETFLAGS} -DUSEFREEIMAGE=1")
         set_target_properties (main3bX11F PROPERTIES COMPILE_FLAGS ${BTARGETFLAGS})
         target_link_libraries (main3bX11F ${EXTRA_LIBS})
+
+        # project 3c
+        add_executable (main3cX11F main.cpp)
+        set (CTARGETFLAGS "${CTARGETFLAGS} -DUSEFREEIMAGE=1")
+        set_target_properties (main3cX11F PROPERTIES COMPILE_FLAGS ${CTARGETFLAGS})
+        target_link_libraries (main3cX11F ${EXTRA_LIBS})
     endif (USE_FREEIMAGE)
 endif (OPENGL_USE_APPLE_X11)
 
@@ -64,6 +77,10 @@ if (APPLE)
     add_executable (main3b main.cpp)
     set_target_properties (main3b PROPERTIES COMPILE_FLAGS -DPROJECT=\\"proj3b\\")
     target_link_libraries (main3b ${EXTRA_LIBS})
+    # project 3c
+    add_executable (main3c main.cpp)
+    set_target_properties (main3c PROPERTIES COMPILE_FLAGS -DPROJECT=\\"proj3c\\")
+    target_link_libraries (main3c ${EXTRA_LIBS})
 
     if (USE_FREEIMAGE)
         include_directories ("/usr/local/include")
@@ -81,5 +98,11 @@ if (APPLE)
         string (REPLACE ";" " " BTARGETFLAGS "${BTARGETFLAGS}")
         set_target_properties (main3bF PROPERTIES COMPILE_FLAGS ${BTARGETFLAGS})
         target_link_libraries (main3bF ${EXTRA_LIBS})
+        # project 3c
+        add_executable (main3cF main.cpp)
+        set (CTARGETFLAGS -DPROJECT=\\"proj3c\\" -DUSEFREEIMAGE=1)
+        string (REPLACE ";" " " CTARGETFLAGS "${CTARGETFLAGS}")
+        set_target_properties (main3cF PROPERTIES COMPILE_FLAGS ${CTARGETFLAGS})
+        target_link_libraries (main3cF ${EXTRA_LIBS})
     endif (USE_FREEIMAGE)
 endif (APPLE)
