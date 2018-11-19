@@ -22,7 +22,7 @@ CFLAGS = --std=c++17 -lstdc++ -framework GLUT -framework OpenGL -Wno-deprecated
 EXECPATH = ./exec
 RM = rm -rf
 
-NAME = main main3a main3b
+NAME = main main3a main3b main3c
 
 .DEFAULT_GOAL := all
 
@@ -39,8 +39,11 @@ main3a: main.cpp
 main3b: main.cpp
 	$(CC) $(CFLAGS) -o $(EXECPATH)/$@ $? -DPROJECT=\"proj3b\"
 
+main3c: main.cpp
+	$(CC) $(CFLAGS) -o $(EXECPATH)/$@ $? -DPROJECT=\"proj3c\"
+
 clean:
-	$(RM) $(NAME:=.dSYM) $(NAME:=.o)
+	$(RM) $(addprefix $(EXECPATH)/, $(NAME:=.dSYM)) $(NAME:=.o)
 
 distclean: clean
-	$(RM) $(EXECPATH)/$(ALLPROGS) ./output/*png
+	$(RM) $(addprefix $(EXECPATH)/, $(NAME)) ./output/*png

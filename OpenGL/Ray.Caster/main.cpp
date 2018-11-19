@@ -1,7 +1,8 @@
 // main.cpp
-// COSC 5450 Project 3a/3b: RayCaster/RayShader
+// COSC 5450 Project 3a/3b/3c: RayCaster/RayShader/RayTracer
 // Libao Jin
 // ljin1@uwyo.edu
+// Updated date: 11/19/2018
 
 int const WIDTH = 500, HEIGHT = 400;
 float const ASPECT = (float)WIDTH / HEIGHT;
@@ -10,7 +11,7 @@ float const ASPECT = (float)WIDTH / HEIGHT;
 #include "header/usefreeimage.h"
 
 // set parameters for the environment
-bool isPerspectiveProjection = false;
+bool isPerspectiveProjection = true;
 bool addEmission = false;
 float viewScreenWidth = 0.5;
 float viewAngle = 32;
@@ -19,6 +20,7 @@ float H = W / ASPECT;
 float N = H / tan((viewAngle / 2) / 180 * pi);
 int blockSize[8] = {1, 2, 4, 5, 10, 20, 50, 100};
 int blockIndex = 0;
+int level = 0;
 Point eye(0, 0, 1);
 Point look(0, 0, 0);
 Vector up(0, 1, 0);
@@ -65,7 +67,7 @@ void display()
     // update the parameters for raycaster
     raycaster.set(backgroundColor, WIDTH, HEIGHT, blockSize[blockIndex], N, W, H, eye, look, up);
     // ray tracing and draw the pixmap
-    raycaster.cast(objects, lights, isPerspectiveProjection, addEmission);
+    raycaster.cast(objects, lights, level, isPerspectiveProjection, addEmission);
 
     if (USEFREEIMAGE) saveImage();
     glutSwapBuffers();
@@ -75,23 +77,34 @@ void keyboard(unsigned char key, int x, int y)
 {
     switch (key) {
     // decrease blocksize to make the resolution of objects higher
-    case '-':
+    case 'h':
         if (--blockIndex <= 0) blockIndex = 0;
         break;
     // increase blocksize to make the resolution of objects lower
-    case '+':
+    case 'l':
         if (++blockIndex >= 8) blockIndex = 7;
+        break;
+    case '-':
+    // decrease reflection level
+        if (--level <= 0) level = 0;
+        break;
+    case '+':
+    // increase reflection level
+        if (++level > 100) level = 100;
         break;
     case 'o':
     case 'O':
+    // orthogonal projection
         isPerspectiveProjection = false;
         break;
     case 'p':
     case 'P':
+    // perspective projection
         isPerspectiveProjection = true;
         break;
     case 'e':
     case 'E':
+    // add/delete emission when do the ray tracing
         addEmission = !addEmission;
         break;
     case 27:

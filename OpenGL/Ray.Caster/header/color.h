@@ -1,11 +1,13 @@
 // color.h
-// Implementation for Coloc Class
-// COSC 5450 Project 3a
+// Implementation for Color Class
+// COSC 5450 Project 3a/3b/3c
 // Libao Jin
-// 10/29/2018
+// Updated date: 11/15/2018
 
 #ifndef COLOR_H
 #define COLOR_H
+
+#include <cstdio>
 
 class Color {
 public:
@@ -110,6 +112,29 @@ public:
         g = g + c.g > 1 ? 1 : g + c.g;
         b = b + c.b > 1 ? 1 : b + c.b;
         a = c.a;
+    }
+
+    void operator*=(const Color &c)
+    {
+        r = r * c.r > 1 ? 1 : r * c.r;
+        g = g * c.g > 1 ? 1 : g * c.g;
+        b = b * c.b > 1 ? 1 : b * c.b;
+        a = a * c.a > 1 ? 1 : a * c.a;
+    }
+
+    bool operator!=(const Color &c)
+    {
+        return !(r == c.r && g == c.g && b == c.b);
+    }
+
+    bool operator==(const Color &c)
+    {
+        return (r == c.r && g == c.g && b == c.b);
+    }
+
+    void Print()
+    {
+        printf("[r g b a] = [%.2f %.2f %.2f %.2f]\n", r, g, b, a);
     }
 };
 
