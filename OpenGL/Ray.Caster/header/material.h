@@ -1,3 +1,9 @@
+// material.h
+// Implementation for Material Class
+// COSC 5450 Project 3b/3c
+// Libao Jin
+// Updated date: 11/02/2018
+
 #ifndef MATERIAL_H
 #define MATERIAL_H
 

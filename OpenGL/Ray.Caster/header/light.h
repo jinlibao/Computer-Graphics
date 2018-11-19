@@ -1,3 +1,9 @@
+// light.h
+// Implementation for Light Class
+// COSC 5450 Project 3b/3c
+// Libao Jin
+// Updated date: 11/15/2018
+
 #ifndef LIGHT_H
 #define LIGHT_H
 
@@ -57,7 +63,7 @@ public:
         position.set(0, 1, 0, 1);
         direction.set(1, 1, 1, 0);
         isPointLight = true;
-        isGlobalAmbient = false;
+        isGlobalAmbient = true;
         isSpotlight = false;
         spot_cutoff = 180;
         spot_exponent = 1;
