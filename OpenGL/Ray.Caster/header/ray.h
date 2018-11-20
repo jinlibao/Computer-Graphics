@@ -12,7 +12,14 @@
 #include <cfloat>
 #include <vector>
 
-#if defined __APPLE__ && !defined X11
+#if defined _WIN32 || defined WIN32 
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <gl/GL.h>
+#include <gl/GLU.h>
+// #include <gl/glut.h>
+#include "glut.h"
+#elif defined __APPLE__ && !defined X11
 #include <GLUT/glut.h>
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
