@@ -14,12 +14,14 @@
 #include <iostream>
 #include <vector>
 
-#ifdef __WIN32__
-#include <windows.h>
+#if defined _WIN32 || defined WIN32
 #define WIN32_LEAN_AND_MEAN
-#endif
-
-#if defined __APPLE__ && !defined X11
+#include <Windows.h>
+#include <gl/GL.h>
+#include <gl/GLU.h>
+// #include <gl/glut.h>
+#include "glut.h"
+#elif defined __APPLE__ && !defined X11
 #include <GLUT/glut.h>
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
@@ -193,7 +195,7 @@ public:
                     t1 = t1 > 0 ? t1 : FLT_MAX;
                     t2 = t2 > 0 ? t2 : FLT_MAX;
                     t1 = min(t1, t2);
-                    // make sure the ray is 
+                    // make sure the ray is
                     if (t1 <= 1e-3)
                         t1 = FLT_MAX;
                     if (t1 < t_hit) {                        t_hit = t1;
