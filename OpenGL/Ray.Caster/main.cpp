@@ -20,7 +20,8 @@ float H = W / ASPECT;
 float N = H / tan((viewAngle / 2) / 180 * pi);
 int blockSize[8] = {1, 2, 4, 5, 10, 20, 50, 100};
 int blockIndex = 0;
-int level = 0;
+int level = 3;
+int levelCap = 8;
 Point eye(0, 0, 1);
 Point look(0, 0, 0);
 Vector up(0, 1, 0);
@@ -82,7 +83,7 @@ void keyboard(unsigned char key, int x, int y)
         break;
     // increase blocksize to make the resolution of objects lower
     case 'l':
-        if (++blockIndex >= 8) blockIndex = 7;
+        if (++blockIndex > 7) blockIndex = 7;
         break;
     case '-':
     // decrease reflection level
@@ -90,7 +91,7 @@ void keyboard(unsigned char key, int x, int y)
         break;
     case '+':
     // increase reflection level
-        if (++level > 100) level = 100;
+        if (++level > levelCap) level = levelCap;
         break;
     case 'o':
     case 'O':

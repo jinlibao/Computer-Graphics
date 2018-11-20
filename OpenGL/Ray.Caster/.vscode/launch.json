@@ -7,7 +7,7 @@
             "request": "launch",
             "preLaunchTask": "main",
             "program": "${workspaceFolder}/exec/main",
-            "args": [],
+            "args": ["-Wno-drepcated-decalarations", "-Wno-deprecated"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

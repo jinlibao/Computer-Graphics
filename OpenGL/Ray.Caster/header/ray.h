@@ -36,6 +36,7 @@
 #endif
 
 #define SHININESS_THRESHOLD 0.5
+#define OPAQUENESS_THRESHOLD 1.0
 
 #define max(a, b) (a > b ? a : b)
 
@@ -163,6 +164,7 @@ public:
     {
         Color hitColor;
         float t_hit = FLT_MAX;  // set t_hit to be inf (FLT_MAX)
+        Object hit_object;
         for (auto &o : objects) {
             // calculate the inverse of the ray
             inverseRay.setDir(o.inverse_transform_matrix * ray.dir);
@@ -175,17 +177,14 @@ public:
                 float C = pow(inverseRay.start.distFromOrigin(), 2) - 1;
                 float delta = pow(B, 2) - 4 * A * C;
                 // if there is no intersection, select background color
-                if (delta < 0) {
-                    if (t_hit == FLT_MAX)
-                        hitColor.set(trace(lights, backgroundColor));
-                }
+                if (delta < 0)
+                    continue;
                 // if there is exact one intersection
                 else if (delta < FLT_MIN) {
-                    float t =
-                        -B / (2 * A) >= 0 ? -B / (2 * A) : FLT_MAX;
+                    float t = -B / (2 * A) >= 0 ? -B / (2 * A) : FLT_MAX;
                     if (t < t_hit) {
                         t_hit = t;
-                        hitColor.set(trace(lights, ray, o, t_hit, addEmission));
+                        hit_object.set(o);
                     }
                 }
                 // if there are intersections, select the smaller one
@@ -195,69 +194,41 @@ public:
                     t1 = t1 > 0 ? t1 : FLT_MAX;
                     t2 = t2 > 0 ? t2 : FLT_MAX;
                     t1 = min(t1, t2);
-                    // make sure the ray is
-                    if (t1 <= 1e-3)
+                    // make sure the ray is not hitting the starting point
+                    if (t1 < 1e-1)
                         t1 = FLT_MAX;
-                    if (t1 < t_hit) {                        t_hit = t1;
-                        hitColor.set(trace(lights, ray, o, t_hit, addEmission));
-                        // if the object is shiny enough and the level is greater than 0, then do the reflection
-                        if (o.material.shininess > SHININESS_THRESHOLD && level > 0) {
-                            Ray reflectionRay = getReflectionRay(ray, o, t_hit);
-                            // reflectionColor: the color got from reflection ray
-                            Color reflectionColor = shade(reflectionRay, objects, lights, addEmission, level - 1);
-                            // noHitColor: the background color
-                            Color noHitColor(trace(lights, backgroundColor));
-                            // if reflection ray does hit an object, then add up two colors
-                            if (reflectionColor != noHitColor)
-                                hitColor += reflectionColor;
-                        }
-                        // Ray refractionRay = getRefractionRay(ray, o, t_hit);
-                        // if (refractionRay.dir.magnitude() > 0 && level > 0)
-                        //     hitColor += shade(refractionRay, objects, lights, addEmission, level - 1);
-                    }
-                }
-            }
-            /*
-            // when the object is a cylinder, similar to spheres
-            else if (o.type == "cylinder") {
-                Vector dir2d(inverseRay.dir.x, 0.0, inverseRay.dir.z);
-                Point center2d(inverseRay.start.x, 0.0, inverseRay.start.z);
-                float A = pow(dir2d.magnitude(), 2);
-                float B = dir2d.dot(center2d) * 2;
-                float C = pow(center2d.distFromOrigin(), 2) - 1;
-                float delta = pow(B, 2) - 4 * A * C;
-                if (delta < 0) {
-                    if (t_hit == FLT_MAX)
-                        hitColor.set(trace(lights, backgroundColor));
-                }
-                else if (delta < FLT_MIN) {
-                    float t =
-                        -B / (2 * A) >= 0 ? -B / (2 * A) : FLT_MAX;
-                    if (t < t_hit) {
-                        float yy =
-                            inverseRay.start.y + inverseRay.dir.y * t;
-                        if (yy >= 0 && yy <= 1.0) {
-                            t_hit = t;
-                            hitColor.set(trace(lights, ray, o, t_hit, addEmission));
-                        }
-                    }
-                }
-                else {
-                    float t1 = (-B + sqrt(delta)) / (2 * A);
-                    float t2 = (-B - sqrt(delta)) / (2 * A);
-                    t1 = t1 > 0 ? t1 : FLT_MAX;
-                    t2 = t2 > 0 ? t2 : FLT_MAX;
-                    t1 = min(t1, t2);
                     if (t1 < t_hit) {
-                        float yy = inverseRay.start.y + inverseRay.dir.y * t1;
-                        if (yy >= 0 && yy <= 1.0) {
-                            t_hit = t1;
-                            hitColor.set(trace(lights, ray, o, t_hit, addEmission));
-                        }
+                        t_hit = t1;
+                        hit_object.set(o);
                     }
                 }
             }
-            */
+        }
+        // if there is no hit
+        if (t_hit == FLT_MAX)
+            hitColor.set(trace(lights, backgroundColor));
+        else {
+            hitColor.set(trace(lights, ray, hit_object, t_hit, addEmission));
+            // if the object is shiny enough and the level is greater than 0, then do the reflection
+            if (hit_object.material.shininess > SHININESS_THRESHOLD && level > 0) {
+                Ray reflectionRay = getReflectionRay(ray, hit_object, t_hit);
+                // reflectionColor: the color got from reflection ray
+                Color reflectionColor = shade(reflectionRay, objects, lights, addEmission, level - 1);
+                // noHitColor: the background color
+                Color noHitColor(trace(lights, backgroundColor));
+                // if reflection ray does hit an object, then add up two colors
+                if (reflectionColor != noHitColor)
+                    hitColor += reflectionColor;
+            }
+            // if (o.material.ambient.a <= OPAQUENESS_THRESHOLD && level > 0) {
+            //     Ray refractionRay = getRefractionRay(ray, o, t_hit);
+            //     if (refractionRay.dir.magnitude() > 0) {
+            //         Color refractionColor = shade(refractionRay, objects, lights, addEmission, level - 1);
+            //         Color noHitColor(trace(lights, backgroundColor));
+            //         if (refractionColor != noHitColor)
+            //             hitColor += refractionColor * 0.2;
+            //     }
+            // }
         }
         return hitColor;
     }
