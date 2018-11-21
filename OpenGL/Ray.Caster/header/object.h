@@ -39,6 +39,8 @@ public:
         inverse_transform_matrix = transform_matrix.matrix.Inverse();
     }
 
+    Object() {}
+
     Object(const Object &o)
     {
         type = o.type;
@@ -94,6 +96,16 @@ public:
         center.set(x, y, z);
         material.set(r, g, b);
         setTransform(radius, length, center);
+    }
+
+    void set(const Object &o)
+    {
+        type = o.type;
+        radius = o.radius;
+        center.set(o.center);
+        material.set(o.material);
+        transform_matrix.matrix = o.transform_matrix.matrix;
+        inverse_transform_matrix = o.inverse_transform_matrix;
     }
 
     void set(string type, float radius, Point &center, Material &material)
