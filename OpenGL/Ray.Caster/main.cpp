@@ -2,7 +2,7 @@
 // COSC 5450 Project 3a/3b/3c: RayCaster/RayShader/RayTracer
 // Libao Jin
 // ljin1@uwyo.edu
-// Updated date: 11/19/2018
+// Updated date: 11/20/2018
 
 int const WIDTH = 500, HEIGHT = 400;
 float const ASPECT = (float)WIDTH / HEIGHT;
@@ -12,7 +12,12 @@ float const ASPECT = (float)WIDTH / HEIGHT;
 
 // set parameters for the environment
 bool isPerspectiveProjection = true;
+// the switch to add emission to spheres
 bool addEmission = false;
+// the switch to add refraction to spheres
+bool addRefraction = true;
+// the switch to add shadow to spheres
+bool addShadow = true;
 float viewScreenWidth = 0.5;
 float viewAngle = 32;
 float W = viewScreenWidth / 2;
@@ -21,7 +26,7 @@ float N = H / tan((viewAngle / 2) / 180 * pi);
 int blockSize[8] = {1, 2, 4, 5, 10, 20, 50, 100};
 int blockIndex = 0;
 int level = 3;
-int levelCap = 8;
+int levelCap = 5;
 Point eye(0, 0, 1);
 Point look(0, 0, 0);
 Vector up(0, 1, 0);
@@ -68,7 +73,7 @@ void display()
     // update the parameters for raycaster
     raycaster.set(backgroundColor, WIDTH, HEIGHT, blockSize[blockIndex], N, W, H, eye, look, up);
     // ray tracing and draw the pixmap
-    raycaster.cast(objects, lights, level, isPerspectiveProjection, addEmission);
+    raycaster.cast(objects, lights, level, isPerspectiveProjection, addEmission, addRefraction, addShadow);
 
     if (USEFREEIMAGE) saveImage();
     glutSwapBuffers();
@@ -108,6 +113,17 @@ void keyboard(unsigned char key, int x, int y)
     // add/delete emission when do the ray tracing
         addEmission = !addEmission;
         break;
+    case 'r':
+    case 'R':
+    // add refraction switch
+        addRefraction = !addRefraction;
+        break;
+    case 's':
+    case 'S':
+    // add shadow switch
+        addShadow = !addShadow;
+        break;
+
     case 27:
         exit(0);
         break;
