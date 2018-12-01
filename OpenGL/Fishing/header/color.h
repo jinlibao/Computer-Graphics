@@ -9,8 +9,6 @@
 
 #include <cstdio>
 
-using namespace std;
-
 class Color {
 public:
     float r;
@@ -36,7 +34,7 @@ public:
         this->a = 1;
     }
 
-    Color(Color &c)
+    Color(const Color &c)
     {
         r = c.r;
         g = c.g;
@@ -60,7 +58,7 @@ public:
         this->a = 1;
     }
 
-    void set(Color &c)
+    void set(const Color &c)
     {
         r = c.r;
         g = c.g;

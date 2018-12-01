@@ -8,8 +8,8 @@ float const ASPECT = (float)WIDTH / HEIGHT;
 float W = WIDTH / 2;
 float H = HEIGHT / 2;
 
-#include "header/color.h"
 #include "header/fish.h"
+#include "header/score.h"
 #include "header/usefreeimage.h"
 #include <climits>
 #include <cstdlib>
@@ -18,8 +18,8 @@ float H = HEIGHT / 2;
 
 Color background(0.5, 0.5, 0.5, 1);
 bool pause = false;
-float foodSpeed = 10;
-float fishSpeed = 10;
+float foodSpeed = 20;
+float fishSpeed = 20;
 clock_t tic;
 clock_t toc;
 float timeElapsed;
@@ -27,6 +27,7 @@ float timeElapsed;
 float refreshTime = 500;
 vector<Food> foods;
 Fish fish(0, -H, 5, 0);
+Score score(-W + 5, H - 20, 0, 0.5, 0, 0.5);
 
 void init()
 {
@@ -43,7 +44,7 @@ void init()
     srand(time(NULL));
 
     float new_x = (float)(rand() % WIDTH - W);
-    Food food(new_x, H - 30, 4);
+    Food food(new_x, H - 30, 4, 0);
     foods.push_back(food);
 }
 
@@ -54,7 +55,8 @@ void timer(int value)
 {
     if (rand() % 100 > 80) {
         float new_x = (float)(rand() % WIDTH - W);
-        Food food(new_x, H, 4);
+        float type = (float)(rand() % 2);
+        Food food(new_x, H, 4, type);
         foods.push_back(food);
     }
     for (int i = 0; i < foods.size();) {
@@ -67,7 +69,14 @@ void timer(int value)
                  foods[i].position.y - fish.position.y <= 2 * fish.size &&
                  foods[i].position.x - fish.position.x >= 0 &&
                  foods[i].position.x - fish.position.x <= 3 * fish.size) {
-            ++fish.size;
+            if (foods[i].type == 0) {
+                ++fish.size;
+                ++score.score;
+            }
+            else {
+                --fish.size;
+                --score.score;
+            }
             foods.erase(foods.begin() + i);
             continue;
         }
@@ -83,9 +92,14 @@ void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(background.r, background.g, background.b, background.a);
-    fish.draw();
-    for (auto &f : foods) {
-        f.draw();
+    if (fish.size > 2) {
+        score.print();
+        fish.draw();
+        for (auto &f : foods)
+            f.draw();
+    }
+    else {
+        score.print(true);
     }
     if (USEFREEIMAGE) saveImage();
     glutSwapBuffers();

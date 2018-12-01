@@ -24,6 +24,7 @@
 #include <GL/glut.h>
 #endif
 
+#include "color.h"
 #include "point.h"
 
 using namespace std;
@@ -33,6 +34,7 @@ class Food;
 class Fish {
 public:
     Point position;
+    Color color;
     float size;
     int direction;
 
@@ -43,6 +45,7 @@ public:
         this->position.set(x, y);
         this->size = size;
         this->direction = direction;
+        this->color.set(1, 1, 1);
     }
 
     Fish(Point &position, float size, int direction)
@@ -50,6 +53,7 @@ public:
         this->position.set(position);
         this->size = size;
         this->direction = direction;
+        this->color.set(1, 1, 1);
     }
 
     Fish(const Fish &f)
@@ -57,6 +61,7 @@ public:
         position = f.position;
         size = f.size;
         direction = f.direction;
+        this->color.set(1, 1, 1);
     }
 
     void set(Point &position, float size, int direction)
@@ -77,6 +82,7 @@ public:
 
     void draw()
     {
+        glColor4f(color.r, color.g, color.b, color.a);
         if (direction != 0) {
             glPushMatrix();
             glTranslatef(position.x, position.y, 0);
@@ -118,25 +124,33 @@ class Food {
 public:
     Point position;
     float size;
+    int type;
+    Color color;
 
     Food() {}
 
-    Food(float x, float y, float size)
+    Food(float x, float y, float size, int type)
     {
         this->position.set(x, y);
         this->size = size;
+        this->type = type;
+        this->color.set(1, 1, 1);
     }
 
-    Food(const Point &position, float size)
+    Food(const Point &position, float size, int type)
     {
         this->position.set(position);
         this->size = size;
+        this->type = type;
+        this->color.set(1, 1, 1);
     }
 
     Food(const Food &f)
     {
         position = f.position;
         size = f.size;
+        type = f.type;
+        color.set(f.color);
     }
 
     void set(const Point &position, float size)
@@ -153,16 +167,31 @@ public:
 
     void draw()
     {
-        glPushMatrix();
-        glTranslatef(position.x, position.y, 0);
-        glScalef(size, size, 1);
-        glBegin(GL_POLYGON);
-        glVertex2f(0, 0);
-        glVertex2f(0, 1);
-        glVertex2f(1, 1);
-        glVertex2f(1, 0);
-        glEnd();
-        glPopMatrix();
+        if (type == 0) {
+            glColor4f(color.r, color.g, color.b, color.a);
+            glPushMatrix();
+            glTranslatef(position.x, position.y, 0);
+            glScalef(size, size, 1);
+            glBegin(GL_POLYGON);
+            glVertex2f(0, 0);
+            glVertex2f(0, 1);
+            glVertex2f(1, 1);
+            glVertex2f(1, 0);
+            glEnd();
+            glPopMatrix();
+        }
+        else {
+            glColor4f(color.r, color.g, color.b, color.a);
+            glPushMatrix();
+            glTranslatef(position.x, position.y, 0);
+            glScalef(size, size, 1);
+            glBegin(GL_POLYGON);
+            glVertex2f(0, 0);
+            glVertex2f(0.5, 1);
+            glVertex2f(1, 0);
+            glEnd();
+            glPopMatrix();
+        }
     }
 };
 
