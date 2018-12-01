@@ -40,7 +40,7 @@ public:
         this->h = 1;
     }
 
-    Point(Point &p)
+    Point(const Point &p)
     {
         x = p.x;
         y = p.y;
@@ -64,7 +64,7 @@ public:
         this->h = 1;
     }
 
-    void set(Point &p)
+    void set(const Point &p)
     {
         x = p.x;
         y = p.y;

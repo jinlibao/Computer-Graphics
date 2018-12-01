@@ -28,60 +28,89 @@
 
 using namespace std;
 
+class Food;
+
 class Fish {
 public:
     Point position;
     float size;
+    int direction;
 
     Fish() {}
 
-    Fish(float x, float y, float size)
+    Fish(float x, float y, float size, int direction)
     {
         this->position.set(x, y);
         this->size = size;
+        this->direction = direction;
     }
 
-    Fish(Point &position, float size)
+    Fish(Point &position, float size, int direction)
     {
         this->position.set(position);
         this->size = size;
+        this->direction = direction;
     }
 
-    Fish(Fish &f)
+    Fish(const Fish &f)
     {
         position = f.position;
         size = f.size;
+        direction = f.direction;
     }
 
-    void set(Point &position, float size)
+    void set(Point &position, float size, int direction)
     {
         this->position.set(position);
         this->size = size;
+        this->direction = direction;
     }
 
-    void set(Fish &f)
+    void set(const Fish &f)
     {
         position = f.position;
         size = f.size;
+        direction = f.direction;
     }
+
+    void move(float displacement) { position.x += displacement; }
 
     void draw()
     {
-        glPushMatrix();
-        glScalef(size, size, 1);
-        glTranslatef(position.x, position.y, 0);
-        glBegin(GL_TRIANGLES);
-        glVertex2f(0, 0);
-        glVertex2f(0, 1);
-        glVertex2f(0.5, 0.5);
-        glEnd();
-        glBegin(GL_POLYGON);
-        glVertex2f(0.5, 0.5);
-        glVertex2f(1, 1);
-        glVertex2f(1.5, 0.5);
-        glVertex2f(1, 0);
-        glEnd();
-        glPopMatrix();
+        if (direction != 0) {
+            glPushMatrix();
+            glTranslatef(position.x, position.y, 0);
+            glScalef(size, size, 1);
+            glBegin(GL_TRIANGLES);
+            glVertex2f(0, 0);
+            glVertex2f(0, 2);
+            glVertex2f(1, 1);
+            glEnd();
+            glBegin(GL_POLYGON);
+            glVertex2f(1, 1);
+            glVertex2f(2, 2);
+            glVertex2f(3, 1);
+            glVertex2f(2, 0);
+            glEnd();
+            glPopMatrix();
+        }
+        else {
+            glPushMatrix();
+            glTranslatef(position.x, position.y, 0);
+            glScalef(size, size, 1);
+            glBegin(GL_TRIANGLES);
+            glVertex2f(2, 1);
+            glVertex2f(3, 2);
+            glVertex2f(3, 0);
+            glEnd();
+            glBegin(GL_POLYGON);
+            glVertex2f(0, 1);
+            glVertex2f(1, 2);
+            glVertex2f(2, 1);
+            glVertex2f(1, 0);
+            glEnd();
+            glPopMatrix();
+        }
     }
 };
 
@@ -98,25 +127,25 @@ public:
         this->size = size;
     }
 
-    Food(Point &position, float size)
+    Food(const Point &position, float size)
     {
         this->position.set(position);
         this->size = size;
     }
 
-    Food(Food &f)
+    Food(const Food &f)
     {
         position = f.position;
         size = f.size;
     }
 
-    void set(Point &position, float size)
+    void set(const Point &position, float size)
     {
         this->position.set(position);
         this->size = size;
     }
 
-    void set(Food &f)
+    void set(const Food &f)
     {
         position = f.position;
         size = f.size;
@@ -125,8 +154,8 @@ public:
     void draw()
     {
         glPushMatrix();
-        glScalef(size, size, 1);
         glTranslatef(position.x, position.y, 0);
+        glScalef(size, size, 1);
         glBegin(GL_POLYGON);
         glVertex2f(0, 0);
         glVertex2f(0, 1);
