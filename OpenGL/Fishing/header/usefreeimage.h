@@ -3,14 +3,13 @@
 
 #ifdef USEFREEIMAGE
 
-#include <iostream>
 #include <FreeImage.h>
+#include <iostream>
 
 int frameNumber = 1;
 int BitsPerPixel = 24;
 
-void saveImage()
-{
+void saveImage() {
 
     FreeImage_Initialise();
     // cout << "FreeImage " << FreeImage_GetVersion() << endl;
@@ -19,7 +18,8 @@ void saveImage()
     GLfloat pixels[3 * WIDTH * HEIGHT];
     glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGB, GL_FLOAT, pixels);
     RGBQUAD color;
-    if (!bitmap) exit(1);
+    if (!bitmap)
+        exit(1);
     for (int i = 0; i < WIDTH; ++i) {
         for (int j = 0; j < HEIGHT; ++j) {
             color.rgbRed = pixels[3 * (j * WIDTH + i)] * 255;

@@ -10,7 +10,7 @@
 #include <cstdio>
 
 class Color {
-public:
+  public:
     float r;
     float g;
     float b;
@@ -18,48 +18,42 @@ public:
 
     Color() {}
 
-    Color(float r, float g, float b, float a)
-    {
+    Color(float r, float g, float b, float a) {
         this->r = r;
         this->g = g;
         this->b = b;
         this->a = a;
     }
 
-    Color(float r, float g, float b)
-    {
+    Color(float r, float g, float b) {
         this->r = r;
         this->g = g;
         this->b = b;
         this->a = 1;
     }
 
-    Color(const Color &c)
-    {
+    Color(const Color &c) {
         r = c.r;
         g = c.g;
         b = c.b;
         a = c.a;
     }
 
-    void set(float r, float g, float b, float a)
-    {
+    void set(float r, float g, float b, float a) {
         this->r = r;
         this->g = g;
         this->b = b;
         this->a = a;
     }
 
-    void set(float r, float g, float b)
-    {
+    void set(float r, float g, float b) {
         this->r = r;
         this->g = g;
         this->b = b;
         this->a = 1;
     }
 
-    void set(const Color &c)
-    {
+    void set(const Color &c) {
         r = c.r;
         g = c.g;
         b = c.b;

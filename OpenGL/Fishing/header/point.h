@@ -10,62 +10,55 @@
 #include <cstdio>
 
 class Point {
-public:
+  public:
     float x;
     float y;
     float z;
     float h;
 
-    Point()
-    {
+    Point() {
         this->x = 0;
         this->y = 0;
         this->z = 0;
         this->h = 1;
     }
 
-    Point(float x, float y)
-    {
+    Point(float x, float y) {
         this->x = x;
         this->y = y;
         this->z = 0;
         this->h = 1;
     }
 
-    Point(float x, float y, float z)
-    {
+    Point(float x, float y, float z) {
         this->x = x;
         this->y = y;
         this->z = z;
         this->h = 1;
     }
 
-    Point(const Point &p)
-    {
+    Point(const Point &p) {
         x = p.x;
         y = p.y;
         z = p.z;
         h = p.h;
     }
 
-    void set(float x, float y)
-    {
+    void set(float x, float y) {
         this->x = x;
         this->y = y;
         this->z = 0;
         this->h = 1;
     }
 
-    void set(float x, float y, float z)
-    {
+    void set(float x, float y, float z) {
         this->x = x;
         this->y = y;
         this->z = z;
         this->h = 1;
     }
 
-    void set(const Point &p)
-    {
+    void set(const Point &p) {
         x = p.x;
         y = p.y;
         z = p.z;
