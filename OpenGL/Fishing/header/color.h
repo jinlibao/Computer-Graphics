@@ -2,7 +2,7 @@
 // Implementation for Color class
 // COSC 5450 Project 4
 // Libao Jin <ljin1@uwyo.edu>
-// Updated date: 11/30/2018
+// Updated date: 12/10/2018
 
 #ifndef COLOR_H
 #define COLOR_H

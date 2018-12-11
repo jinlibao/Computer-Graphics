@@ -1,7 +1,7 @@
 // main.cpp
 // COSC 5450 Project 4: Gaming - Fishing
 // Libao Jin <ljin1@uwyo.edu>
-// Updated date: 11/30/2018
+// Updated date: 12/10/2018
 
 int const WIDTH = 800, HEIGHT = 600;
 float const ASPECT = (float)WIDTH / HEIGHT;
@@ -27,12 +27,12 @@ float timeElapsed;
 float foodSize = 10;
 Color healthyFoodColor(0.823529412, 0.839215686, 0.364705882, 1);
 Color poisonousFoodColor(0.850980392, 0.631372549, 0.752941176, 1);
-float initialFishSize = 10;
+float initialFishSize = 8;
 // refresh time in milliseconds
 float refreshTime = 200;
 vector<Food> foods;
 
-Fish fish(0, -H, 40, 0, 1, 1, 0.956862745, 0.898039216, 0.301960784);
+Fish fish(0, -H, initialFishSize, 0, 5, 5, 0.956862745, 0.898039216, 0.301960784);
 Score score(-W + 5, H - 20, 0, 3, 1, 1, 1);
 
 void init() {
@@ -73,8 +73,8 @@ void timer(int value) {
         if (foods[i].position.y < -H) {
             foods.erase(foods.begin() + i);
             continue;
-        } else if (foods[i].position.y - fish.position.y >= -(fish.height / 2 * fish.size + foods[i].height / 2 * foods[i].size) &&
-                   foods[i].position.y - fish.position.y <= fish.height / 2 * fish.size + foods[i].height / 2 * foods[i].size &&
+        } else if (foods[i].position.y - fish.position.y >= -(fish.height * fish.size + foods[i].height * foods[i].size / 2) &&
+                   foods[i].position.y - fish.position.y <= fish.height * fish.size + foods[i].height * foods[i].size / 2 &&
                    foods[i].position.x - fish.position.x >= -(fish.width / 2 * fish.size + foods[i].width / 2 * foods[i].size) &&
                    foods[i].position.x - fish.position.x <= fish.width / 2 * fish.size + foods[i].width / 2 * foods[i].size) {
             if (foods[i].type == 0) {
@@ -142,8 +142,8 @@ void keyboard(unsigned char key, int x, int y) {
     case 'p':
         pause = true;
         break;
-    case 'S':
-    case 's':
+    case 'R':
+    case 'r':
         if (pause) {
             pause = false;
             timer(1);

@@ -5,7 +5,7 @@ set (CMAKE_CXX_COMPILER "clang++")
 set (CMAKE_CXX_FLAGS "-std=c++17 -stdlib=libc++ -Wno-deprecated")
 include_directories ("${PROJECT_SOURCE_DIR}/include")
 
-option (OPENGL_USE_APPLE_X11 "Use X11" ON)
+option (OPENGL_USE_APPLE_X11 "Use X11" OFF)
 option (USE_FREEIMAGE "Use FreeImage" OFF)
 
 if (OPENGL_USE_APPLE_X11)
@@ -31,7 +31,6 @@ if (OPENGL_USE_APPLE_X11)
         message ("${EXTRA_LIBS} ${TARGETFLAGS}")
         set_target_properties (mainX11F PROPERTIES COMPILE_FLAGS ${TARGETFLAGS})
         target_link_libraries (mainX11F ${EXTRA_LIBS})
-
     endif (USE_FREEIMAGE)
 endif (OPENGL_USE_APPLE_X11)
 
@@ -43,7 +42,6 @@ if (APPLE)
     set (EXTRA_LIBS ${GLUT_LIBRARIES} ${OpenGL_LIBRARIES})
 
     add_executable (main main.cpp)
-    set_target_properties (main PROPERTIES COMPILE_FLAGS ${TARGETFLAGS})
     target_link_libraries (main ${EXTRA_LIBS})
 
     if (USE_FREEIMAGE)

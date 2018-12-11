@@ -2,7 +2,7 @@
 // Implementation for Fish and Food class
 // COSC 5450 Project 4
 // Libao Jin <ljin1@uwyo.edu>
-// Updated date: 11/30/2018
+// Updated date: 12/10/2018
 
 #ifndef FISH_H
 #define FISH_H
@@ -106,7 +106,6 @@ class Fish {
     void draw() {
         float w = width;
         float h = height;
-        glColor4f(color.r, color.g, color.b, color.a);
         glPushMatrix();
         glTranslatef(position.x, position.y + h / 2 * size, 0);
         if (direction != 0)
